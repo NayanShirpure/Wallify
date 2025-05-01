@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogClose, // Import DialogClose
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -49,7 +50,8 @@ interface PexelsResponse {
   next_page?: string;
 }
 
-// Removed redundant constant definition - use process.env directly
+// Use environment variable directly
+const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 
 export default function Home() {
@@ -63,8 +65,7 @@ export default function Home() {
   const { toast } = useToast();
 
    const fetchWallpapers = useCallback(async (query: string, pageNum: number = 1, append: boolean = false) => {
-    const apiKey = process.env.NEXT_PUBLIC_PEXELS_API_KEY; // Get key inside function scope
-    if (!apiKey) {
+    if (!PEXELS_API_KEY) {
       console.error("Pexels API key is missing.");
       toast({
         title: "API Key Error",
@@ -82,7 +83,7 @@ export default function Home() {
         `${PEXELS_API_URL}/search?query=${encodeURIComponent(query)}&per_page=30&page=${pageNum}`,
         {
           headers: {
-            Authorization: apiKey, // Use the key fetched from env
+            Authorization: PEXELS_API_KEY,
           },
         }
       );
@@ -345,4 +346,3 @@ export default function Home() {
     </div>
   );
 }
-

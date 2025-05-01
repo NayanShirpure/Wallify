@@ -8,8 +8,8 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 3 // Allow slightly more toasts
+const TOAST_REMOVE_DELAY = 5000 // Increase delay to 5 seconds
 
 type ToasterToast = ToastProps & {
   id: string
@@ -60,7 +60,8 @@ const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
 const addToRemoveQueue = (toastId: string) => {
   if (toastTimeouts.has(toastId)) {
-    return
+     // Clear existing timeout if the toast is updated or re-added
+    clearTimeout(toastTimeouts.get(toastId));
   }
 
   const timeout = setTimeout(() => {
@@ -77,12 +78,18 @@ const addToRemoveQueue = (toastId: string) => {
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "ADD_TOAST":
+      // Schedule removal for the new toast
+      addToRemoveQueue(action.toast.id);
       return {
         ...state,
         toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
       }
 
     case "UPDATE_TOAST":
+        // If updating, reset the removal timeout
+      if (action.toast.id) {
+          addToRemoveQueue(action.toast.id);
+      }
       return {
         ...state,
         toasts: state.toasts.map((t) =>
@@ -93,15 +100,24 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
+      // Stop the removal timeout for the dismissed toast
       if (toastId) {
-        addToRemoveQueue(toastId)
+         if (toastTimeouts.has(toastId)) {
+            clearTimeout(toastTimeouts.get(toastId));
+            toastTimeouts.delete(toastId);
+         }
       } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id)
-        })
+         // Stop all timeouts if dismissing all
+        toastTimeouts.forEach(timeout => clearTimeout(timeout));
+        toastTimeouts.clear();
       }
+
+
+      // Add toast to removal queue explicitly on dismiss IF it should auto-remove after dismiss
+      // For manual dismiss, we might not want this. Assuming manual dismiss = remove immediately.
+      // Let's refine: DISMISS_TOAST just marks it closed. REMOVE_TOAST actually removes it.
+      // The auto-removal timeout should lead to REMOVE_TOAST, not DISMISS_TOAST.
+       // Let's remove the addToRemoveQueue call from here as it's handled by ADD/UPDATE
 
       return {
         ...state,
@@ -109,13 +125,23 @@ export const reducer = (state: State, action: Action): State => {
           t.id === toastId || toastId === undefined
             ? {
                 ...t,
-                open: false,
+                open: false, // Mark as closed, visual transition starts
               }
             : t
         ),
       }
     }
     case "REMOVE_TOAST":
+      // Clean up timeout just in case
+       if (action.toastId && toastTimeouts.has(action.toastId)) {
+          clearTimeout(toastTimeouts.get(action.toastId));
+          toastTimeouts.delete(action.toastId);
+       } else if (!action.toastId) {
+            // Clear all timeouts if removing all
+            toastTimeouts.forEach(timeout => clearTimeout(timeout));
+            toastTimeouts.clear();
+       }
+
       if (action.toastId === undefined) {
         return {
           ...state,
@@ -159,7 +185,15 @@ function toast({ ...props }: Toast) {
       id,
       open: true,
       onOpenChange: (open) => {
-        if (!open) dismiss()
+         // When the toast's open state changes (e.g., due to animation end or swipe)
+        if (!open) {
+             // Ensure timeout is cleared and remove the toast from state
+             if (toastTimeouts.has(id)) {
+                clearTimeout(toastTimeouts.get(id));
+                toastTimeouts.delete(id);
+             }
+            dispatch({ type: "REMOVE_TOAST", toastId: id });
+         }
       },
     },
   })

@@ -16,6 +16,18 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      { // Add Pexels image domain
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+        port: '',
+        pathname: '/**',
+      },
+       { // Add Pexels video domain (might be needed if API returns video previews)
+        protocol: 'https',
+        hostname: 'videos.pexels.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

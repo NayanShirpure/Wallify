@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -15,7 +16,7 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs" // Import Tabs components
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { downloadFile } from '@/lib/utils';
@@ -71,11 +72,20 @@ export default function Home() {
    const fetchWallpapers = useCallback(async (query: string, currentCategory: Category, pageNum: number = 1, append: boolean = false) => {
     if (!PEXELS_API_KEY) {
       console.error("Pexels API key is missing.");
-      toast({
-        title: "API Key Error",
-        description: "Pexels API key is not configured. Please add NEXT_PUBLIC_PEXELS_API_KEY to your environment variables.",
-        variant: "destructive",
-      });
+      // Avoid showing API key errors in production UI
+      if (process.env.NODE_ENV === 'development') {
+          toast({
+            title: "API Key Error",
+            description: "Pexels API key is not configured. Please add NEXT_PUBLIC_PEXELS_API_KEY to your environment variables.",
+            variant: "destructive",
+          });
+      } else {
+         toast({
+            title: "Configuration Error",
+            description: "Could not fetch wallpapers due to a configuration issue.",
+            variant: "destructive",
+         });
+      }
       setLoading(false);
       setHasMore(false); // Prevent further loading attempts
       return;
@@ -87,14 +97,7 @@ export default function Home() {
     const orientation = currentCategory === 'desktop' ? 'landscape' : 'portrait';
 
     // Construct query
-    let finalQuery = query.trim();
-    // Optional: Add category-specific keywords if needed, but orientation might be enough
-    // if (currentCategory === 'desktop') {
-    //     finalQuery += " desktop";
-    // } else { // smartphone
-    //     finalQuery += " phone";
-    // }
-    finalQuery = finalQuery.trim() || 'popular'; // Use 'popular' if query is empty
+    let finalQuery = query.trim() || 'popular'; // Use 'popular' if query is empty
 
     try {
       // Construct the API URL with query and orientation
@@ -109,11 +112,19 @@ export default function Home() {
       if (!response.ok) {
          if (response.status === 401) { // Unauthorized
             console.error("Pexels API key is invalid or unauthorized.");
-             toast({
-                title: "API Key Invalid",
-                description: "The configured Pexels API key is invalid or unauthorized.",
-                variant: "destructive",
-             });
+            if (process.env.NODE_ENV === 'development') {
+                 toast({
+                    title: "API Key Invalid",
+                    description: "The configured Pexels API key is invalid or unauthorized.",
+                    variant: "destructive",
+                 });
+             } else {
+                  toast({
+                    title: "Authentication Error",
+                    description: "Could not authenticate with the image provider.",
+                    variant: "destructive",
+                });
+             }
              setHasMore(false); // Stop loading more if key is invalid
          } else {
              console.error(`HTTP error! status: ${response.status}, URL: ${apiUrl}`);
@@ -246,8 +257,10 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto max-w-4xl px-4 py-4 flex flex-col items-center gap-4">
-            <h1 className="text-3xl font-bold text-center text-primary">Wallify</h1>
+        {/* Reduced padding from py-4 to py-2 */}
+        <div className="container mx-auto max-w-4xl px-4 py-2 flex flex-col items-center gap-3">
+             {/* Reduced title size from text-3xl to text-2xl */}
+            <h1 className="text-2xl font-bold text-center text-primary">Wallify</h1>
              <form onSubmit={handleSearch} className="flex gap-2 items-center w-full max-w-xl">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
@@ -255,18 +268,19 @@ export default function Home() {
                         type="search"
                         name="search"
                         placeholder={`Search ${category} wallpapers...`}
-                        className="pl-10 w-full bg-secondary border-border focus:ring-2 focus:ring-ring text-foreground rounded-full h-11"
+                        className="pl-10 w-full bg-secondary border-border focus:ring-2 focus:ring-ring text-foreground rounded-full h-10" // Reduced height to h-10
                         defaultValue={searchTerm}
                         aria-label="Search wallpapers"
                     />
                 </div>
-                <Button type="submit" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-11 px-6">
-                    <Search className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Search</span>
+                <Button type="submit" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-10 px-5"> {/* Reduced height to h-10 and padding */}
+                    <Search className="h-4 w-4 md:mr-1" /> <span className="hidden md:inline">Search</span> {/* Adjusted icon margin */}
                 </Button>
             </form>
              {/* Category Selection Tabs */}
              <Tabs value={category} onValueChange={(value) => handleCategoryChange(value as Category)} className="w-full max-w-xs">
-                <TabsList className="grid w-full grid-cols-2">
+                 {/* Reduced height of TabsList */}
+                <TabsList className="grid w-full grid-cols-2 h-9">
                     <TabsTrigger value="smartphone">Smartphone</TabsTrigger>
                     <TabsTrigger value="desktop">Desktop</TabsTrigger>
                 </TabsList>
@@ -385,7 +399,7 @@ export default function Home() {
             </DialogContent>
         </Dialog>
 
-      <footer className="text-center text-muted-foreground text-xs mt-auto py-5 border-t border-border bg-secondary/50">
+      <footer className="text-center text-muted-foreground text-xs mt-auto py-4 border-t border-border bg-secondary/50"> {/* Adjusted padding */}
         Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>.
         App built with Firebase & Next.js.
       </footer>

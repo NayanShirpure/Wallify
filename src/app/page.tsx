@@ -2,6 +2,7 @@
 
 'use client';
 
+import type { PexelsPhoto, PexelsResponse, Category } from '@/types/pexels'; // Import types
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Input } from '@/components/ui/input';
@@ -14,48 +15,17 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogClose, // Ensure DialogClose is imported
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { downloadFile } from '@/lib/utils';
 
-interface PexelsPhoto {
-  id: number;
-  width: number;
-  height: number;
-  url: string;
-  photographer: string;
-  photographer_url: string;
-  photographer_id: number;
-  avg_color: string;
-  src: {
-    original: string;
-    large2x: string;
-    large: string;
-    medium: string;
-    small: string;
-    portrait: string;
-    landscape: string;
-    tiny: string;
-  };
-  liked: boolean;
-  alt: string;
-}
-
-interface PexelsResponse {
-  page: number;
-  per_page: number;
-  photos: PexelsPhoto[];
-  total_results: number;
-  next_page?: string;
-}
-
-type Category = 'smartphone' | 'desktop';
 
 // Use environment variable directly
-const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY;
+// Ensure NEXT_PUBLIC_ prefix for client-side access
+const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw"; // Fallback added for demo purposes, replace or remove in production
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 
 export default function Home() {
@@ -132,9 +102,16 @@ export default function Home() {
          }
       } else {
             const data: PexelsResponse = await response.json();
+            const newPhotos = data.photos || []; // Ensure it's an array
 
-            setWallpapers(prev => append ? [...prev, ...data.photos] : data.photos);
-            setHasMore(!!data.next_page && data.photos.length > 0);
+            setWallpapers(prev => {
+              const combined = append ? [...prev, ...newPhotos] : newPhotos;
+              // Use a Map to ensure uniqueness based on wallpaper ID, preventing key errors
+              const uniqueMap = new Map(combined.map(item => [item.id, item]));
+              return Array.from(uniqueMap.values());
+            });
+
+            setHasMore(!!data.next_page && newPhotos.length > 0); // Check based on photos actually received
       }
 
     } catch (error) {
@@ -148,14 +125,16 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-   }, [toast]);
+   }, [toast]); // Removed category from dependencies as it's passed directly
 
 
   useEffect(() => {
     // Fetch initial wallpapers based on default term and category
+    // Pass category explicitly
     fetchWallpapers(searchTerm, category, 1);
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on initial mount
+
 
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -179,7 +158,7 @@ export default function Home() {
            setPage(1);
            setWallpapers([]);
            setHasMore(true);
-           fetchWallpapers(searchTerm, newCategory, 1); // Fetch with new category
+           fetchWallpapers(searchTerm, newCategory, 1); // Fetch with new category and current search term
        }
    };
 
@@ -187,7 +166,7 @@ export default function Home() {
     if (!loading && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      fetchWallpapers(searchTerm, category, nextPage, true); // Fetch next page and append
+      fetchWallpapers(searchTerm, category, nextPage, true); // Fetch next page and append, using current category
     }
   };
 
@@ -302,6 +281,7 @@ export default function Home() {
                 <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4`}>
                     {wallpapers.map((wallpaper) => (
                     <div
+                        // Use a combination of ID and a unique identifier if needed, but ID should be unique from Pexels
                         key={wallpaper.id}
                         className={`relative ${gridAspectRatio} w-full rounded-lg overflow-hidden cursor-pointer group transition-transform duration-300 ease-in-out hover:scale-105 shadow-md hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background`}
                         onClick={() => openModal(wallpaper)}
@@ -406,3 +386,4 @@ export default function Home() {
     </div>
   );
 }
+

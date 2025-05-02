@@ -83,24 +83,28 @@ export default function Home() {
 
     setLoading(true);
 
-    // Construct query based on category
+    // Determine orientation based on category
+    const orientation = currentCategory === 'desktop' ? 'landscape' : 'portrait';
+
+    // Construct query
     let finalQuery = query.trim();
-    if (currentCategory === 'desktop') {
-        finalQuery += " desktop landscape";
-    } else { // smartphone
-        finalQuery += " phone portrait";
-    }
-    finalQuery = finalQuery.trim(); // Ensure no leading/trailing spaces
+    // Optional: Add category-specific keywords if needed, but orientation might be enough
+    // if (currentCategory === 'desktop') {
+    //     finalQuery += " desktop";
+    // } else { // smartphone
+    //     finalQuery += " phone";
+    // }
+    finalQuery = finalQuery.trim() || 'popular'; // Use 'popular' if query is empty
 
     try {
-      const response = await fetch(
-        `${PEXELS_API_URL}/search?query=${encodeURIComponent(finalQuery)}&per_page=30&page=${pageNum}`,
-        {
-          headers: {
-            Authorization: PEXELS_API_KEY,
-          },
-        }
-      );
+      // Construct the API URL with query and orientation
+      const apiUrl = `${PEXELS_API_URL}/search?query=${encodeURIComponent(finalQuery)}&orientation=${orientation}&per_page=30&page=${pageNum}`;
+
+      const response = await fetch(apiUrl, {
+        headers: {
+          Authorization: PEXELS_API_KEY,
+        },
+      });
 
       if (!response.ok) {
          if (response.status === 401) { // Unauthorized
@@ -112,6 +116,7 @@ export default function Home() {
              });
              setHasMore(false); // Stop loading more if key is invalid
          } else {
+             console.error(`HTTP error! status: ${response.status}, URL: ${apiUrl}`);
              throw new Error(`HTTP error! status: ${response.status}`);
          }
       } else {
@@ -149,14 +154,12 @@ export default function Home() {
 
     const effectiveSearchTerm = trimmedSearchTerm || 'Popular'; // Use 'Popular' if search is empty
 
-    // Only trigger a new search if the term actually changes from the current state
-    if (effectiveSearchTerm !== searchTerm) {
-       setSearchTerm(effectiveSearchTerm);
-       setPage(1); // Reset page number on new search
-       setWallpapers([]); // Clear existing wallpapers for the new search
-       setHasMore(true); // Assume there might be more pages for the new term
-       fetchWallpapers(effectiveSearchTerm, category, 1); // Use current category
-    }
+    // Reset and fetch regardless of term change because category might be the implicit difference
+    setSearchTerm(effectiveSearchTerm);
+    setPage(1); // Reset page number on new search
+    setWallpapers([]); // Clear existing wallpapers for the new search
+    setHasMore(true); // Assume there might be more pages for the new term
+    fetchWallpapers(effectiveSearchTerm, category, 1); // Use current category
   };
 
    const handleCategoryChange = (newCategory: Category) => {
@@ -221,14 +224,24 @@ export default function Home() {
       // Prefer portrait for smartphone, landscape for desktop if available, fallback gracefully
       if (category === 'desktop' && wallpaper.src.landscape) return wallpaper.src.landscape;
       if (category === 'smartphone' && wallpaper.src.portrait) return wallpaper.src.portrait;
-      return wallpaper.src.large; // Fallback to large if preferred is not available
+      // Fallback logic: prefer medium or large based on category if primary is missing
+      if (category === 'desktop') return wallpaper.src.medium || wallpaper.src.large;
+      if (category === 'smartphone') return wallpaper.src.medium || wallpaper.src.large;
+      return wallpaper.src.large; // General fallback
    };
 
    // Determine aspect ratio for grid items based on category
    const gridAspectRatio = category === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
    // Determine image fill/contain based on category for grid
-   const gridImageFit = category === 'desktop' ? 'object-cover' : 'object-cover'; // Cover usually looks better in grid
+   const gridImageFit = 'object-cover'; // Cover generally looks best for thumbnails
 
+
+   // Modal aspect ratio based on the *selected image*, not category, but constrained
+   const modalAspectRatio = selectedWallpaper
+    ? selectedWallpaper.width / selectedWallpaper.height > 1
+        ? 'aspect-video' // Landscape image
+        : 'aspect-[9/16]' // Portrait or square image
+    : gridAspectRatio; // Fallback to grid aspect ratio if no image selected
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -291,7 +304,7 @@ export default function Home() {
                         className={`${gridImageFit} transition-opacity duration-300 group-hover:opacity-80`} // Use dynamic fit
                         placeholder="blur"
                         blurDataURL={wallpaper.src.tiny}
-                        data-ai-hint="wallpaper background phone desktop" // AI hint
+                        data-ai-hint={`${category === 'desktop' ? 'desktop background' : 'phone wallpaper'} ${wallpaper.alt}`} // AI hint
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2 justify-between">
                          <p className="text-white text-xs truncate drop-shadow-sm">{wallpaper.alt || `By ${wallpaper.photographer}`}</p>
@@ -311,7 +324,7 @@ export default function Home() {
                  )}
 
                  {/* Loading indicator for pagination */}
-                 {loading && (
+                 {loading && wallpapers.length > 0 && ( // Show pagination loader only if wallpapers already exist
                      <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4`}>
                         {[...Array(5)].map((_, i) => (
                          <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
@@ -330,13 +343,14 @@ export default function Home() {
             <DialogContent className="max-w-md w-[90vw] p-0 border-none !rounded-xl overflow-hidden shadow-2xl bg-card/80 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
                  {selectedWallpaper && (
                 <>
-                     <DialogHeader className="absolute top-0 left-0 z-30 p-4 w-full flex flex-row justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
+                     <DialogHeader className="absolute top-0 left-0 right-0 z-30 p-4 flex flex-row justify-between items-start bg-gradient-to-b from-black/50 to-transparent">
                          <div className="flex flex-col mr-4 overflow-hidden">
                              <DialogTitle className="text-base font-semibold text-white truncate">{selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`}</DialogTitle>
                              <DialogDescription className="text-xs text-gray-300">
                                 Photo by <a href={selectedWallpaper.photographer_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">{selectedWallpaper.photographer}</a>
                              </DialogDescription>
                          </div>
+                         {/* Close button positioned top-right */}
                          <DialogClose
                             onClick={closeModal}
                             className="text-white bg-black/30 rounded-full p-1.5 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black/30 transition-colors shrink-0"
@@ -346,24 +360,24 @@ export default function Home() {
                         </DialogClose>
                     </DialogHeader>
 
-                    {/* Image Container - adjust aspect ratio based on selected category potentially or keep fixed */}
-                     <div className={`relative w-full ${gridAspectRatio === 'aspect-video' ? 'aspect-video' : 'aspect-[9/16]'} max-h-[75vh] bg-black/50 flex items-center justify-center`}>
+                    {/* Image Container - Dynamically adjust aspect ratio based on the image */}
+                     <div className={`relative w-full ${modalAspectRatio} max-h-[75vh] bg-black/50 flex items-center justify-center overflow-hidden`}>
                          <Image
                             src={selectedWallpaper.src.large2x || selectedWallpaper.src.original} // Use higher res for modal
                             alt={selectedWallpaper.alt || `Preview of wallpaper by ${selectedWallpaper.photographer}`}
                             fill
                             sizes="(max-width: 768px) 90vw, 50vw"
                             className="object-contain" // Contain ensures the whole image is visible
-                            priority
+                            priority // Load this image first as it's in the modal
                             placeholder="blur"
                             blurDataURL={selectedWallpaper.src.tiny}
                          />
                     </div>
 
-                     <DialogFooter className="absolute bottom-0 left-0 z-30 p-4 w-full flex justify-end bg-gradient-to-t from-black/50 to-transparent">
-                        <Button onClick={handleDownload} className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md rounded-full px-5 py-2.5 text-sm" disabled={loading}>
+                     <DialogFooter className="absolute bottom-0 left-0 right-0 z-30 p-4 flex justify-end bg-gradient-to-t from-black/50 to-transparent">
+                        <Button onClick={handleDownload} className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md rounded-full px-5 py-2.5 text-sm">
                             <Download className="mr-2 h-4 w-4" />
-                            {loading ? 'Downloading...' : 'Download Original'}
+                            Download Original
                         </Button>
                     </DialogFooter>
                  </>
@@ -378,4 +392,3 @@ export default function Home() {
     </div>
   );
 }
-

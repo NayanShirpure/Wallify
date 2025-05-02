@@ -29,7 +29,7 @@ const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrek
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 
 export default function Home() {
-  const [searchTerm, setSearchTerm] = useState('Nature'); // Default search term
+  const [searchTerm, setSearchTerm] = useState('Wallpaper'); // Default search term changed to 'Wallpaper'
   const [category, setCategory] = useState<Category>('smartphone'); // Default category
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +67,7 @@ export default function Home() {
     const orientation = currentCategory === 'desktop' ? 'landscape' : 'portrait';
 
     // Construct query
-    let finalQuery = query.trim() || 'popular'; // Use 'popular' if query is empty
+    let finalQuery = query.trim() || 'wallpaper'; // Use 'wallpaper' if query is empty
 
     try {
       // Construct the API URL with query and orientation
@@ -142,7 +142,7 @@ export default function Home() {
     const newSearchTerm = formData.get('search') as string;
     const trimmedSearchTerm = newSearchTerm.trim();
 
-    const effectiveSearchTerm = trimmedSearchTerm || 'Popular'; // Use 'Popular' if search is empty
+    const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper'; // Use 'Wallpaper' if search is empty
 
     // Reset and fetch regardless of term change because category might be the implicit difference
     setSearchTerm(effectiveSearchTerm);
@@ -282,7 +282,7 @@ export default function Home() {
                     {wallpapers.map((wallpaper) => (
                     <div
                         // Use a combination of ID and a unique identifier if needed, but ID should be unique from Pexels
-                        key={wallpaper.id}
+                        key={`${wallpaper.id}-${category}`} // Added category to key for uniqueness across category changes
                         className={`relative ${gridAspectRatio} w-full rounded-lg overflow-hidden cursor-pointer group transition-transform duration-300 ease-in-out hover:scale-105 shadow-md hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background`}
                         onClick={() => openModal(wallpaper)}
                         role="button"

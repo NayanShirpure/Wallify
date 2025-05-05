@@ -5,6 +5,7 @@
 import type { PexelsPhoto, PexelsResponse, Category } from '@/types/pexels'; // Import types
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link'; // Import Link
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Download, X } from 'lucide-react';
@@ -380,8 +381,17 @@ export default function Home() {
         </Dialog>
 
       <footer className="text-center text-muted-foreground text-xs mt-auto py-4 border-t border-border bg-secondary/50"> {/* Adjusted padding */}
-        Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>.
-        App built with Firebase & Next.js.
+         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
+            <p>
+                Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>.
+                App built with Firebase & Next.js.
+            </p>
+            <nav className="flex gap-4">
+                <Link href="/privacy-policy" className="underline hover:text-accent">Privacy Policy</Link>
+                <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
+                <Link href="/contact" className="underline hover:text-accent">Contact</Link>
+            </nav>
+        </div>
       </footer>
     </div>
   );

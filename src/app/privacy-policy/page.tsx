@@ -1,0 +1,83 @@
+
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy - Wallify',
+  description: 'Wallify Privacy Policy',
+};
+
+export default function PrivacyPolicyPage() {
+  return (
+    <div className="min-h-screen bg-background text-foreground dark">
+      <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
+          <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-primary">
+            <ArrowLeft className="h-5 w-5" />
+            Back to Wallify
+          </Link>
+          <h1 className="text-xl font-bold text-primary">Privacy Policy</h1>
+          <div className="w-10"></div> {/* Spacer */}
+        </div>
+      </header>
+      <main className="container mx-auto max-w-4xl p-4 py-8 md:p-6 md:py-12">
+        <article className="prose prose-invert max-w-none dark:prose-invert">
+          <h2 className="text-2xl font-semibold text-primary">Privacy Policy</h2>
+          <p>Last updated: {new Date().toLocaleDateString()}</p>
+
+          <p>
+            Welcome to Wallify! We are committed to protecting your privacy. This Privacy Policy explains how we
+            collect, use, disclose, and safeguard your information when you use our application.
+          </p>
+
+          <h3 className="text-xl font-semibold text-primary mt-6">Information We Collect</h3>
+          <p>
+            Wallify does not collect any personally identifiable information from its users. We use the Pexels API
+            to fetch wallpapers based on your search queries and category selections. Your search terms and category
+            preferences are processed to provide the service but are not stored or linked to you personally by Wallify.
+          </p>
+          <p>
+            Usage Data: We may collect anonymous usage data through standard web analytics tools to understand how
+            users interact with Wallify. This data helps us improve the application but does not identify individual users.
+          </p>
+
+          <h3 className="text-xl font-semibold text-primary mt-6">How We Use Information</h3>
+          <p>
+            The primary use of any collected information (like search terms) is to provide and improve the Wallify service.
+            Anonymous usage data helps us understand trends and enhance user experience.
+          </p>
+
+          <h3 className="text-xl font-semibold text-primary mt-6">Third-Party Services</h3>
+          <p>
+            Wallify relies on the Pexels API (<a href="https://www.pexels.com/api/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://www.pexels.com/api/</a>)
+            to provide wallpaper images. Your interactions with the Pexels service through Wallify are subject to Pexels'
+            own Privacy Policy (<a href="https://www.pexels.com/privacy-policy/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://www.pexels.com/privacy-policy/</a>) and Terms of Service
+            (<a href="https://www.pexels.com/terms-of-service/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://www.pexels.com/terms-of-service/</a>). We recommend you review their policies.
+          </p>
+
+          <h3 className="text-xl font-semibold text-primary mt-6">Data Security</h3>
+          <p>
+            While Wallify itself does not store personal data, we implement reasonable measures to protect the application
+            and its users. However, no electronic transmission or storage is 100% secure.
+          </p>
+
+          <h3 className="text-xl font-semibold text-primary mt-6">Changes to This Privacy Policy</h3>
+          <p>
+            We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new
+            Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes.
+          </p>
+
+          <h3 className="text-xl font-semibold text-primary mt-6">Contact Us</h3>
+          <p>
+            If you have any questions about this Privacy Policy, please contact us via the{' '}
+            <Link href="/contact" className="underline hover:text-accent">Contact Us</Link> page.
+          </p>
+        </article>
+      </main>
+       <footer className="mt-auto border-t border-border bg-secondary/50 py-4 text-center text-xs text-muted-foreground">
+        © {new Date().getFullYear()} Wallify. All rights reserved.
+      </footer>
+    </div>
+  );
+}

@@ -26,7 +26,7 @@ import { downloadFile } from '@/lib/utils';
 
 // Use environment variable directly
 // Ensure NEXT_PUBLIC_ prefix for client-side access
-const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw"; // Fallback added for demo purposes, replace or remove in production
+const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw"; 
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 
 export default function Home() {
@@ -133,7 +133,7 @@ export default function Home() {
     // Fetch initial wallpapers based on default term and category
     fetchWallpapers(searchTerm, category, 1);
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on initial mount
+  }, [searchTerm, category, fetchWallpapers]); // Rerun if category or searchTerm changes programmatically or initial values change.
 
 
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
@@ -237,31 +237,31 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
         {/* Reduced padding from py-4 to py-2 */}
-        <div className="container mx-auto max-w-4xl px-4 py-2 flex flex-col items-center gap-3">
+        <div className="container mx-auto max-w-4xl px-4 py-3 sm:py-4 flex flex-col items-center gap-3">
              {/* Reduced title size from text-3xl to text-2xl */}
-            <h1 className="text-2xl font-bold text-center text-primary">Wallify</h1>
-             <form onSubmit={handleSearch} className="flex gap-2 items-center w-full max-w-xl">
+            <h1 className="text-2xl sm:text-3xl font-bold text-center text-primary">Wallify</h1>
+             <form onSubmit={handleSearch} className="flex gap-2 items-center w-full max-w-md sm:max-w-lg md:max-w-xl">
                 <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground pointer-events-none" />
                     <Input
                         type="search"
                         name="search"
                         placeholder={`Search ${category} wallpapers...`}
-                        className="pl-10 w-full bg-secondary border-border focus:ring-2 focus:ring-ring text-foreground rounded-full h-10" // Reduced height to h-10
+                        className="pl-9 sm:pl-10 w-full bg-secondary border-border focus:ring-2 focus:ring-ring text-foreground rounded-full h-9 sm:h-10 text-sm sm:text-base" 
                         defaultValue={searchTerm}
                         aria-label="Search wallpapers"
                     />
                 </div>
-                <Button type="submit" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-10 px-5"> {/* Reduced height to h-10 and padding */}
-                    <Search className="h-4 w-4 md:mr-1" /> <span className="hidden md:inline">Search</span> {/* Adjusted icon margin */}
+                <Button type="submit" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-9 sm:h-10 px-4 sm:px-5 text-sm sm:text-base">
+                    <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-1.5" /> <span className="hidden md:inline">Search</span>
                 </Button>
             </form>
              {/* Category Selection Tabs */}
-             <Tabs value={category} onValueChange={(value) => handleCategoryChange(value as Category)} className="w-full max-w-xs">
+             <Tabs value={category} onValueChange={(value) => handleCategoryChange(value as Category)} className="w-full max-w-xs sm:max-w-sm">
                  {/* Reduced height of TabsList */}
                 <TabsList className="grid w-full grid-cols-2 h-9">
-                    <TabsTrigger value="smartphone">Smartphone</TabsTrigger>
-                    <TabsTrigger value="desktop">Desktop</TabsTrigger>
+                    <TabsTrigger value="smartphone" className="text-xs sm:text-sm">Smartphone</TabsTrigger>
+                    <TabsTrigger value="desktop" className="text-xs sm:text-sm">Desktop</TabsTrigger>
                 </TabsList>
             </Tabs>
         </div>
@@ -378,15 +378,15 @@ export default function Home() {
             </DialogContent>
         </Dialog>
 
-      <footer className="text-center text-muted-foreground text-xs mt-auto py-4 border-t border-border bg-secondary/50"> {/* Adjusted padding */}
-         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
-            <p>
+      <footer className="text-center text-muted-foreground text-xs mt-auto py-3 sm:py-4 border-t border-border bg-secondary/50">
+         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2 px-4">
+            <p className="text-center md:text-left">
                 Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>.
                 App built with Firebase & Next.js.
             </p>
-            <nav className="flex gap-x-4 gap-y-1 flex-wrap justify-center">
-                <Link href="/about" className="underline hover:text-accent">About Us</Link>
-                <Link href="/privacy-policy" className="underline hover:text-accent">Privacy Policy</Link>
+            <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
+                <Link href="/about" className="underline hover:text-accent">About</Link>
+                <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>
                 <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
                 <Link href="/contact" className="underline hover:text-accent">Contact</Link>
             </nav>
@@ -395,4 +395,3 @@ export default function Home() {
     </div>
   );
 }
-

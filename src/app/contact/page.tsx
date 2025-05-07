@@ -13,14 +13,18 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-background text-foreground dark flex flex-col">
-       <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-primary">
-            <ArrowLeft className="h-5 w-5" />
-            Back to Wallify
+       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
+        <div className="container mx-auto flex h-14 sm:h-16 items-center px-3 sm:px-4 md:px-6 relative">
+          <Link href="/" className="flex items-center gap-1 sm:gap-1.5 text-sm sm:text-base font-semibold text-primary hover:text-accent transition-colors z-10" aria-label="Back to Wallify homepage">
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+            <span className="hidden sm:inline">
+              Back
+              <span className="hidden md:inline"> to Wallify</span>
+            </span>
           </Link>
-          <h1 className="text-xl font-bold text-primary">Contact Us</h1>
-           <div className="w-10"></div> {/* Spacer */}
+          <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2 truncate max-w-[calc(100%-80px)] sm:max-w-[calc(100%-120px)] md:max-w-[calc(100%-200px)]">
+            Contact Us
+          </h1>
         </div>
       </header>
       <main className="flex flex-grow flex-col items-center justify-center p-4 py-8 md:p-6 md:py-12">

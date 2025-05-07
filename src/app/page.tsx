@@ -16,7 +16,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose, // Ensure DialogClose is imported
+  DialogClose,
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
@@ -68,7 +68,7 @@ export default function Home() {
     const orientation = currentCategory === 'desktop' ? 'landscape' : 'portrait';
 
     // Construct query
-    let finalQuery = query.trim() || 'wallpaper'; // Use 'wallpaper' if query is empty
+    let finalQuery = query.trim() || 'Wallpaper'; // Use 'wallpaper' if query is empty
 
     try {
       // Construct the API URL with query and orientation
@@ -126,12 +126,11 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-   }, [toast]); // Removed category from dependencies as it's passed directly
+   }, [toast]);
 
 
   useEffect(() => {
     // Fetch initial wallpapers based on default term and category
-    // Pass category explicitly
     fetchWallpapers(searchTerm, category, 1);
      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on initial mount
@@ -282,8 +281,7 @@ export default function Home() {
                 <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4`}>
                     {wallpapers.map((wallpaper) => (
                     <div
-                        // Use a combination of ID and a unique identifier if needed, but ID should be unique from Pexels
-                        key={`${wallpaper.id}-${category}`} // Added category to key for uniqueness across category changes
+                        key={`${wallpaper.id}-${category}`} 
                         className={`relative ${gridAspectRatio} w-full rounded-lg overflow-hidden cursor-pointer group transition-transform duration-300 ease-in-out hover:scale-105 shadow-md hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background`}
                         onClick={() => openModal(wallpaper)}
                         role="button"
@@ -386,7 +384,8 @@ export default function Home() {
                 Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>.
                 App built with Firebase & Next.js.
             </p>
-            <nav className="flex gap-4">
+            <nav className="flex gap-x-4 gap-y-1 flex-wrap justify-center">
+                <Link href="/about" className="underline hover:text-accent">About Us</Link>
                 <Link href="/privacy-policy" className="underline hover:text-accent">Privacy Policy</Link>
                 <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
                 <Link href="/contact" className="underline hover:text-accent">Contact</Link>

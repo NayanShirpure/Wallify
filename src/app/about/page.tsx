@@ -5,7 +5,7 @@ import { ArrowLeft, Info, Users, Target } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { StructuredData } from '@/components/structured-data';
-import type { Organization } from 'schema-dts';
+import type { Organization, WithContext } from 'schema-dts'; // Added WithContext
 
 export const metadata: Metadata = {
   title: 'About Us - Wallify',
@@ -15,11 +15,12 @@ export const metadata: Metadata = {
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
 
 export default function AboutUsPage() {
-  const organizationSchema: Organization = {
+  const orgData: WithContext<Organization> = {
+    '@context': 'https://schema.org', // Added @context
     '@type': 'Organization',
     name: 'Wallify',
     url: BASE_URL,
-    logo: 'https://picsum.photos/seed/wallify-app-logo/200/60',
+    logo: `${BASE_URL}/icon.png`, // Updated to a relative path, ensure icon.png exists in public
     description: 'Wallify is your ultimate destination for stunning, high-quality wallpapers for all your devices.',
     contactPoint: {
       '@type': 'ContactPoint',
@@ -30,7 +31,7 @@ export default function AboutUsPage() {
 
   return (
     <>
-      <StructuredData data={organizationSchema} />
+      <StructuredData data={orgData} />
       <div className="min-h-screen bg-background text-foreground dark flex flex-col">
         <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
           <div className="container mx-auto flex h-14 sm:h-16 items-center px-3 sm:px-4 md:px-6 relative">
@@ -50,8 +51,8 @@ export default function AboutUsPage() {
           <div className="space-y-12">
             <section className="text-center">
               <Image
-                src="https://picsum.photos/seed/wallify-logo/300/150"
-                alt="Wallify App Concept"
+                src="https://picsum.photos/seed/wallify-logo-concept/300/150"
+                alt="Wallify App Concept Art"
                 width={300}
                 height={150}
                 className="mx-auto mb-6 rounded-lg shadow-lg"

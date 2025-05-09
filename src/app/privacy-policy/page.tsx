@@ -100,7 +100,7 @@ export default function PrivacyPolicyPage() {
           </article>
         </main>
          <footer className="mt-auto border-t border-border bg-secondary/50 py-4 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Wallify. All rights reserved.
+          © 2025 Wallify. All rights reserved.
         </footer>
       </div>
     </>

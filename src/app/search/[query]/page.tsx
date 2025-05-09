@@ -1,7 +1,7 @@
 'use client';
 
 import type { PexelsPhoto, PexelsResponse } from '@/types/pexels';
-import { use, useState, useEffect, useCallback } from 'react'; // Added 'use'
+import { use, useState, useEffect, useCallback } from 'react'; 
 import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
@@ -40,15 +40,15 @@ const PEXELS_API_URL = 'https://api.pexels.com/v1';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
 
 interface SearchPageProps {
-  params: Promise<{ query: string }>; // Updated to Promise
+  params: Promise<{ query: string }>; 
 }
 
-export default function SearchPage({ params: paramsPromise }: SearchPageProps) { // Renamed prop to paramsPromise
-  const params = use(paramsPromise); // Unwrap the promise
+export default function SearchPage({ params: paramsPromise }: SearchPageProps) { 
+  const params = use(paramsPromise); 
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialQuery = decodeURIComponent(params.query); // params is now the resolved object
+  const initialQuery = decodeURIComponent(params.query); 
   const initialCategory = (searchParams.get('category') as Category) || 'smartphone';
 
   const [searchTerm, setSearchTerm] = useState(initialQuery);
@@ -406,8 +406,7 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
         <footer className="text-center text-muted-foreground text-xs mt-auto py-3 sm:py-4 border-t border-border bg-background/50">
           <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2 px-4">
             <p className="text-center md:text-left">
-              Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>.
-               App by <a href="https://studioweb.dev" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">StudioWeb</a>.
+              Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>. © 2025 Wallify. All rights reserved.
             </p>
             <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
               <Link href="/about" className="underline hover:text-accent">About</Link>

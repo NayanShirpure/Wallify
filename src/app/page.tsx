@@ -29,7 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { wallpaperCategories, type Category } from '@/config/categories'; // Updated import
+import { wallpaperCategories, type Category } from '@/config/categories'; 
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject, WithContext } from 'schema-dts';
 import { useRouter } from 'next/navigation';
@@ -135,8 +135,10 @@ export default function Home() {
 
   useEffect(() => {
     // Only fetch if searchTerm is not empty, to avoid initial load with "Nature" if that's not desired
-    if (searchTerm.trim()) {
+    if (searchTerm.trim() && searchTerm !== "Wallpaper") {
       fetchWallpapers(searchTerm, currentCategory, 1);
+    } else if (searchTerm === "Wallpaper") {
+      fetchWallpapers("Wallpaper", currentCategory, 1); // Fetch default "Wallpaper" search
     } else {
       setLoading(false); // Ensure loading is false if no initial search
       setWallpapers([]); // Clear wallpapers
@@ -157,15 +159,17 @@ export default function Home() {
 
   const handleDeviceCategoryChange = (newCategory: Category) => {
        if (newCategory !== currentCategory) {
-           setCurrentCategory(newCategory); // This will trigger useEffect
+           setCurrentCategory(newCategory); 
            // Update URL if already on a search page, or just change state if on home
-           if(searchTerm && searchTerm !== 'Wallpaper') { // Avoid pushing for default term on home
+           if(searchTerm && searchTerm !== 'Wallpaper') { 
              router.push(`/search/${encodeURIComponent(searchTerm)}?category=${newCategory}`, { scroll: false });
            } else {
               // If on homepage, just update category, useEffect will handle fetch
               setPage(1);
               setWallpapers([]);
               setHasMore(true);
+              // Fetch wallpapers for the new category with the default search term "Wallpaper"
+              fetchWallpapers("Wallpaper", newCategory, 1);
            }
        }
    };
@@ -333,7 +337,7 @@ export default function Home() {
                   <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
                       {wallpapers.map((wallpaper) => (
                       <div
-                          key={`${wallpaper.id}-${currentCategory}`} // Ensure unique key with category
+                          key={`${wallpaper.id}-${currentCategory}`} 
                           className={`relative ${gridAspectRatio} w-full rounded-lg overflow-hidden cursor-pointer group transition-transform duration-300 ease-in-out hover:scale-105 shadow-md hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background`}
                           onClick={() => openModal(wallpaper)}
                           role="button"
@@ -430,8 +434,7 @@ export default function Home() {
         <footer className="text-center text-muted-foreground text-xs mt-auto py-3 sm:py-4 border-t border-border bg-background/50">
            <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2 px-4">
               <p className="text-center md:text-left">
-                  Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>.
-                  App by <a href="https://studioweb.dev" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">StudioWeb</a>.
+                  Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>. © 2025 Wallify. All rights reserved.
               </p>
               <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
                   <Link href="/about" className="underline hover:text-accent">About</Link>

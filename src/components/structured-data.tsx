@@ -10,7 +10,7 @@ export function StructuredData<T extends Thing>({ data }: StructuredDataProps<T>
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
-      key={`structured-data-${data['@type']}-${(data as any).url || (data as any).name || JSON.stringify(data).substring(0,50)}`}
+      key={`structured-data-${(data as Thing)['@type'] ?? 'unknown'}-${(data as any).url || (data as any).name || JSON.stringify(data).substring(0,50)}`}
     />
   );
 }

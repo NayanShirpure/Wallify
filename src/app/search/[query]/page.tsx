@@ -29,7 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { wallpaperCategories, type Category } from '@/config/categories';
+import { wallpaperCategories, type Category, popularSearchQueries } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject, WithContext } from 'schema-dts';
 import { useRouter } from 'next/navigation';
@@ -42,6 +42,13 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.co
 interface SearchPageProps {
   params: Promise<{ query: string }>; 
 }
+
+export async function generateStaticParams() {
+  return popularSearchQueries.map((query) => ({
+    query: encodeURIComponent(query),
+  }));
+}
+
 
 export default function SearchPage({ params: paramsPromise }: SearchPageProps) { 
   const params = use(paramsPromise); 
@@ -420,3 +427,4 @@ export default function SearchPage({ params: paramsPromise }: SearchPageProps) {
     </>
   );
 }
+

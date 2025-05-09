@@ -1,6 +1,6 @@
 
 import type { MetadataRoute } from 'next';
-import { popularSearchQueries, deviceCategories, type Category } from '@/config/categories'; // Updated import
+// Removed: import { popularSearchQueries, deviceCategories, type Category } from '@/config/categories';
 export const dynamic = 'force-static'
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
@@ -19,14 +19,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: page.priority,
   }));
 
-  const searchCategoryPages = popularSearchQueries.flatMap((query) =>
-    deviceCategories.map((deviceCategory) => ({
-      url: `${BASE_URL}/search/${encodeURIComponent(query)}?category=${deviceCategory}`,
-      lastModified: new Date().toISOString(),
-      changeFrequency: 'weekly' as MetadataRoute.Sitemap[0]['changeFrequency'],
-      priority: 0.6,
-    }))
-  );
+  // Removed searchCategoryPages as the search page is deleted
+  // const searchCategoryPages = popularSearchQueries.flatMap((query) =>
+  //   deviceCategories.map((deviceCategory) => ({
+  //     url: `${BASE_URL}/search/${encodeURIComponent(query)}?category=${deviceCategory}`,
+  //     lastModified: new Date().toISOString(),
+  //     changeFrequency: 'weekly' as MetadataRoute.Sitemap[0]['changeFrequency'],
+  //     priority: 0.6,
+  //   }))
+  // );
 
-  return [...staticPages, ...searchCategoryPages];
+  return [...staticPages]; // Return only static pages
 }
+

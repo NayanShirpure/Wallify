@@ -32,14 +32,15 @@ export default function RootLayout({
     name: 'Wallify',
     url: BASE_URL,
     description: 'Beautiful wallpapers curated for you.',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${BASE_URL}/search/{search_term_string}`,
-      },
-      ...({ "query-input": "required name=search_term_string" } as any)
-    },
+    // Removed potentialAction as search page is deleted
+    // potentialAction: {
+    //   '@type': 'SearchAction',
+    //   target: {
+    //     '@type': 'EntryPoint',
+    //     urlTemplate: `${BASE_URL}/search/{search_term_string}`,
+    //   },
+    //   ...({ "query-input": "required name=search_term_string" } as any)
+    // },
   };
 
   return (
@@ -57,3 +58,4 @@ export default function RootLayout({
     </html>
   );
 }
+

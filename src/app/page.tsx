@@ -32,8 +32,7 @@ import {
 import { wallpaperCategories, type Category } from '@/config/categories'; 
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject, WithContext } from 'schema-dts';
-import { useRouter } from 'next/navigation';
-
+// Removed useRouter from 'next/navigation' as we are not navigating to a separate search page
 
 const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw"; 
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
@@ -41,7 +40,6 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.co
 
 
 export default function Home() {
-  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('Wallpaper'); 
   const [currentCategory, setCurrentCategory] = useState<Category>('smartphone'); 
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
@@ -112,7 +110,6 @@ export default function Home() {
 
             setWallpapers(prev => {
               const combined = append ? [...prev, ...newPhotos] : newPhotos;
-              // Ensure unique keys by combining ID and category, as photos might appear in multiple categories
               const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item]));
               return Array.from(uniqueMap.values());
             });
@@ -134,16 +131,7 @@ export default function Home() {
 
 
   useEffect(() => {
-    // Only fetch if searchTerm is not empty, to avoid initial load with "Nature" if that's not desired
-    if (searchTerm.trim() && searchTerm !== "Wallpaper") {
-      fetchWallpapers(searchTerm, currentCategory, 1);
-    } else if (searchTerm === "Wallpaper") {
-      fetchWallpapers("Wallpaper", currentCategory, 1); // Fetch default "Wallpaper" search
-    } else {
-      setLoading(false); // Ensure loading is false if no initial search
-      setWallpapers([]); // Clear wallpapers
-      setHasMore(false); // No more content if no search term
-    }
+    fetchWallpapers(searchTerm, currentCategory, 1);
   }, [searchTerm, currentCategory, fetchWallpapers]); 
 
 
@@ -153,29 +141,29 @@ export default function Home() {
     const newSearchTerm = formData.get('search') as string;
     const trimmedSearchTerm = newSearchTerm.trim();
     const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper'; 
-
-    router.push(`/search/${encodeURIComponent(effectiveSearchTerm)}?category=${currentCategory}`);
+    
+    setSearchTerm(effectiveSearchTerm);
+    setPage(1);
+    setWallpapers([]);
+    setHasMore(true);
+    // No navigation, useEffect will handle the fetch
   };
 
   const handleDeviceCategoryChange = (newCategory: Category) => {
        if (newCategory !== currentCategory) {
            setCurrentCategory(newCategory); 
-           // Update URL if already on a search page, or just change state if on home
-           if(searchTerm && searchTerm !== 'Wallpaper') { 
-             router.push(`/search/${encodeURIComponent(searchTerm)}?category=${newCategory}`, { scroll: false });
-           } else {
-              // If on homepage, just update category, useEffect will handle fetch
-              setPage(1);
-              setWallpapers([]);
-              setHasMore(true);
-              // Fetch wallpapers for the new category with the default search term "Wallpaper"
-              fetchWallpapers("Wallpaper", newCategory, 1);
-           }
+           setPage(1);
+           setWallpapers([]);
+           setHasMore(true);
+           // useEffect will handle fetch
        }
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    router.push(`/search/${encodeURIComponent(categoryValue)}?category=${currentCategory}`);
+    setSearchTerm(categoryValue); // This will trigger the useEffect to fetch wallpapers
+    setPage(1);
+    setWallpapers([]);
+    setHasMore(true);
   };
 
 
@@ -225,7 +213,6 @@ export default function Home() {
    const gridImageSrc = (wallpaper: PexelsPhoto) => {
       if (currentCategory === 'desktop' && wallpaper.src.landscape) return wallpaper.src.landscape;
       if (currentCategory === 'smartphone' && wallpaper.src.portrait) return wallpaper.src.portrait;
-      // Fallback if specific orientation is not available, prefer larger images.
       if (currentCategory === 'desktop') return wallpaper.src.large2x || wallpaper.src.large || wallpaper.src.original;
       if (currentCategory === 'smartphone') return wallpaper.src.large || wallpaper.src.medium || wallpaper.src.original;
       return wallpaper.src.large; 
@@ -236,7 +223,7 @@ export default function Home() {
 
 
    const modalAspectRatio = selectedWallpaper
-    ? selectedWallpaper.width / selectedWallpaper.height > 1.2 // Consider wider than 16:9 as landscape
+    ? selectedWallpaper.width / selectedWallpaper.height > 1.2 
         ? 'aspect-video' 
         : 'aspect-[9/16]' 
     : gridAspectRatio; 
@@ -248,7 +235,7 @@ export default function Home() {
     description: selectedWallpaper.alt || `High-resolution wallpaper by ${selectedWallpaper.photographer}. Dimensions: ${selectedWallpaper.width}x${selectedWallpaper.height}.`,
     contentUrl: selectedWallpaper.src.original,
     thumbnailUrl: selectedWallpaper.src.medium,
-    width: { '@type': 'Distance', value: selectedWallpaper.width, unitCode: 'E37' }, // E37 is UN/CEFACT code for pixel
+    width: { '@type': 'Distance', value: selectedWallpaper.width, unitCode: 'E37' }, 
     height: { '@type': 'Distance', value: selectedWallpaper.height, unitCode: 'E37' },
     author: {
       '@type': 'Person',

@@ -1,3 +1,4 @@
+
 // No 'use client' here
 import type { Metadata } from 'next';
 import { popularSearchQueries, type Category } from '@/config/categories';
@@ -46,18 +47,19 @@ export async function generateMetadata(
   };
 }
 
-// PageProps now expects the 'params' to be a Promise
+// PageProps now expects both 'params' and 'searchParams' to be Promises
 interface PageProps {
-  params: Promise<{ query: string }>; // Params is a Promise
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: Promise<{ query: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default function Page({ params: paramsPromise, searchParams }: PageProps) {
-  // Use React.use to unwrap the promise in a Server Component
+export default function Page({ params: paramsPromise, searchParams: searchParamsPromise }: PageProps) {
+  // Use React.use to unwrap the promises in a Server Component
   const resolvedParams = React.use(paramsPromise);
+  const resolvedSearchParams = searchParamsPromise ? React.use(searchParamsPromise) : undefined;
 
   const query = resolvedParams.query ? decodeURIComponent(resolvedParams.query) : 'Wallpaper';
-  const initialCategory = (searchParams?.category as Category) || 'smartphone';
+  const initialCategory = (resolvedSearchParams?.category as Category) || 'smartphone';
 
   return (
     <SearchPageClient

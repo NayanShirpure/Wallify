@@ -1,9 +1,8 @@
-// No 'use client' here as this is a Server Component by default
+// No 'use client' here
 import type { Metadata } from 'next';
 import { popularSearchQueries, type Category } from '@/config/categories';
 import SearchPageClient from '@/components/search-page-client';
-// React import is no longer needed if React.use is removed and no other React specific hooks are used.
-// import React from 'react'; 
+import React from 'react'; // Import React for React.use
 
 export async function generateStaticParams() {
   // Return an array of params for popular search queries.
@@ -21,7 +20,7 @@ export async function generateMetadata(
   const query = params.query ? decodeURIComponent(params.query) : 'Wallpapers';
   const category = (searchParams?.category as Category) || 'smartphone';
   const BARE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
-  const pageUrl = `${BARE_URL}/search/${encodeURIComponent(params.query)}${searchParams?.category ? `?category=${searchParams.category}` : ''}`;
+  const pageUrl = `${BARE_URL}/search/${params.query}${searchParams?.category ? `?category=${searchParams.category}` : ''}`;
 
   return {
     title: `Search: ${query} (${category}) - Wallify`,
@@ -37,7 +36,7 @@ export async function generateMetadata(
       type: 'website',
       images: [
         {
-          url: `${BARE_URL}/icon.png`, // Ensure icon.png exists in public
+          url: `${BARE_URL}/icon.png`,
           width: 512,
           height: 512,
           alt: 'Wallify Logo',
@@ -48,17 +47,18 @@ export async function generateMetadata(
 }
 
 interface PageProps {
-  params: { query: string };
+  params: { query: string }; // Directly use { query: string }, not Promise
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default function Page({ params, searchParams }: PageProps) {
-  const initialQuery = params.query ? decodeURIComponent(params.query) : 'Wallpaper';
+export default async function Page({ params, searchParams }: PageProps) {
+  // Await the params to make sure they're resolved
+  const query = params.query ? decodeURIComponent(params.query) : 'Wallpaper';
   const initialCategory = (searchParams?.category as Category) || 'smartphone';
 
   return (
     <SearchPageClient
-      initialQuery={initialQuery}
+      initialQuery={query}
       initialCategory={initialCategory}
     />
   );

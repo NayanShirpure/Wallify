@@ -4,7 +4,8 @@ import './globals.css';
 import { cn } from '@/lib/utils'; // Import cn utility
 import { Toaster } from "@/components/ui/toaster"; // Import Toaster
 import { StructuredData } from '@/components/structured-data';
-import type { WebSite } from 'schema-dts';
+import type { WithContext, WebSite } from 'schema-dts';
+
 
 const inter = Inter({
   variable: '--font-inter', // Define CSS variable for Inter
@@ -25,7 +26,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const webSiteSchema: WebSite = {
+  const webSiteSchema: WithContext<WebSite> = {
+    '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Wallify',
     url: BASE_URL,
@@ -36,7 +38,7 @@ export default function RootLayout({
         '@type': 'EntryPoint',
         urlTemplate: `${BASE_URL}/search/{search_term_string}`,
       },
-      'query-input': 'required name=search_term_string',
+      ...({ "query-input": "required name=search_term_string" } as any)
     },
   };
 

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useForm, ValidationError } from '@formspree/react';
-import type { FormError } from '@formspree/react'; // FieldValues might not be needed
+import type { FieldValues, SubmissionError } from '@formspree/react';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 
@@ -22,18 +22,13 @@ export function ContactForm() {
         title: "Message Sent!",
         description: "Thanks for reaching out. We'll get back to you soon.",
       });
-      // Formspree typically resets the form on success or you can manually reset if needed.
-      // e.g., if you have access to the form event: (event.target as HTMLFormElement).reset();
-      // For @formspree/react, relying on its internal state management for reset is common.
-    } else if (state.errors && state.errors.length > 0) {
-      // state.errors is an array of FormError objects
-      // FormError: { code?: string | null; field?: string; message: string; }
-
-      // Display form-level errors (errors without a 'field' property) as toasts
-      const formLevelErrors = state.errors.filter(err => !err.field);
-
-      if (formLevelErrors.length > 0) {
-        formLevelErrors.forEach(error => {
+      // Formspree typically resets the form on success.
+    } else if (state.errors) {
+      // state.errors is a SubmissionError object
+      // Get form-level errors
+      const formErrors = state.errors.getFormErrors();
+      if (formErrors.length > 0) {
+        formErrors.forEach((error: { message: string; code?: string | null }) => {
           toast({
             title: "Submission Error",
             description: error.message || "An unexpected error occurred.",
@@ -42,8 +37,6 @@ export function ContactForm() {
         });
       }
       // Field-level errors are handled by the <ValidationError /> components below.
-      // A generic toast for "please check the form" could be added here if desired,
-      // but might be redundant if field errors are clearly shown.
     }
   }, [state.succeeded, state.errors, toast]);
 
@@ -90,9 +83,9 @@ export function ContactForm() {
             {state.submitting ? 'Sending...' : 'Send Message'}
           </Button>
           {/* Display form-level errors (errors without a 'field' property) inline below the button */}
-          {state.errors && state.errors.filter(err => !err.field).length > 0 && (
+          {state.errors && state.errors.getFormErrors().length > 0 && (
             <div className="mt-2 text-sm text-destructive">
-                {state.errors.filter(err => !err.field).map((error, index) => (
+                {state.errors.getFormErrors().map((error: { message: string; code?: string | null }, index: number) => (
                     <p key={`form-error-${index}`}>{error.message}</p>
                 ))}
             </div>
@@ -102,4 +95,3 @@ export function ContactForm() {
     </Card>
   );
 }
-

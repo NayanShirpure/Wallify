@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useForm, ValidationError } from '@formspree/react';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import type { FieldValues } from 'react-hook-form'; // For SubmissionError type if needed
 
 export function ContactForm() {
   const [state, handleSubmit] = useForm("xeoggpoa"); 
@@ -22,14 +23,21 @@ export function ContactForm() {
       });
       // Optionally reset the form or redirect
       // e.g., if you have access to the form event: event.target.reset();
-    } else if (state.errors && state.errors.length > 0) {
-        state.errors.forEach(error => {
-             toast({
-                title: "Submission Error",
-                description: error.message || "An unexpected error occurred.",
-                variant: "destructive",
-             });
+      // For @formspree/react, the form often clears/resets its state internally on success.
+    } else if (state.errors) {
+      // Check for form-level errors and display them as toasts
+      // state.errors is a SubmissionError object which has a formErrors array
+      if (state.errors.formErrors.length > 0) {
+        state.errors.formErrors.forEach(error => {
+          toast({
+            title: "Submission Error",
+            description: error.message || "An unexpected error occurred.",
+            variant: "destructive",
+          });
         });
+      }
+      // Field-specific errors are handled by the <ValidationError /> components below.
+      // If you wanted to toast for field errors as well, you could iterate state.errors.getAllFieldErrors()
     }
   }, [state.succeeded, state.errors, toast]);
 
@@ -75,10 +83,11 @@ export function ContactForm() {
           <Button type="submit" disabled={state.submitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
             {state.submitting ? 'Sending...' : 'Send Message'}
           </Button>
-          {state.errors && state.errors.formErrors && state.errors.formErrors.length > 0 && (
+          {/* This section correctly displays form-level errors inline below the button */}
+          {state.errors && state.errors.formErrors.length > 0 && (
             <div className="mt-2 text-sm text-destructive">
                 {state.errors.formErrors.map((error, index) => (
-                    <p key={index}>{error.message}</p>
+                    <p key={`form-error-${index}`}>{error.message}</p>
                 ))}
             </div>
           )}

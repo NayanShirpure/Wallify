@@ -1,14 +1,13 @@
 
-
 'use client';
 
-import type { PexelsPhoto, PexelsResponse, Category } from '@/types/pexels'; // Import types
+import type { PexelsPhoto, PexelsResponse } from '@/types/pexels';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import Link from 'next/link'; // Import Link
+import Link from 'next/link'; 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Download, X } from 'lucide-react';
+import { Search, Download, X, Menu } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -22,16 +21,27 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { downloadFile } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { popularSearchQueries, type Category, deviceCategories, wallpaperCategories } from '@/config/categories';
+import { StructuredData } from '@/components/structured-data';
+import type { ImageObject, WithContext } from 'schema-dts';
 
 
-// Use environment variable directly
-// Ensure NEXT_PUBLIC_ prefix for client-side access
 const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw"; 
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
+
 
 export default function Home() {
-  const [searchTerm, setSearchTerm] = useState('Wallpaper'); // Default search term changed to 'Wallpaper'
-  const [category, setCategory] = useState<Category>('smartphone'); // Default category
+  const [searchTerm, setSearchTerm] = useState('Wallpaper'); 
+  const [currentCategory, setCurrentCategory] = useState<Category>('smartphone'); 
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
@@ -40,10 +50,9 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
 
-   const fetchWallpapers = useCallback(async (query: string, currentCategory: Category, pageNum: number = 1, append: boolean = false) => {
+   const fetchWallpapers = useCallback(async (query: string, category: Category, pageNum: number = 1, append: boolean = false) => {
     if (!PEXELS_API_KEY) {
       console.error("Pexels API key is missing.");
-      // Avoid showing API key errors in production UI
       if (process.env.NODE_ENV === 'development') {
           toast({
             title: "API Key Error",
@@ -58,22 +67,16 @@ export default function Home() {
          });
       }
       setLoading(false);
-      setHasMore(false); // Prevent further loading attempts
+      setHasMore(false);
       return;
     }
 
     setLoading(true);
-
-    // Determine orientation based on category
-    const orientation = currentCategory === 'desktop' ? 'landscape' : 'portrait';
-
-    // Construct query
-    let finalQuery = query.trim() || 'Wallpaper'; // Use 'wallpaper' if query is empty
+    const orientation = category === 'desktop' ? 'landscape' : 'portrait';
+    let finalQuery = query.trim() || 'Wallpaper'; 
 
     try {
-      // Construct the API URL with query and orientation
       const apiUrl = `${PEXELS_API_URL}/search?query=${encodeURIComponent(finalQuery)}&orientation=${orientation}&per_page=30&page=${pageNum}`;
-
       const response = await fetch(apiUrl, {
         headers: {
           Authorization: PEXELS_API_KEY,
@@ -81,7 +84,7 @@ export default function Home() {
       });
 
       if (!response.ok) {
-         if (response.status === 401) { // Unauthorized
+         if (response.status === 401) { 
             console.error("Pexels API key is invalid or unauthorized.");
             if (process.env.NODE_ENV === 'development') {
                  toast({
@@ -96,23 +99,21 @@ export default function Home() {
                     variant: "destructive",
                 });
              }
-             setHasMore(false); // Stop loading more if key is invalid
+             setHasMore(false); 
          } else {
              console.error(`HTTP error! status: ${response.status}, URL: ${apiUrl}`);
              throw new Error(`HTTP error! status: ${response.status}`);
          }
       } else {
             const data: PexelsResponse = await response.json();
-            const newPhotos = data.photos || []; // Ensure it's an array
+            const newPhotos = data.photos || []; 
 
             setWallpapers(prev => {
               const combined = append ? [...prev, ...newPhotos] : newPhotos;
-              // Use a Map to ensure uniqueness based on wallpaper ID, preventing key errors
-              const uniqueMap = new Map(combined.map(item => [item.id, item]));
+              const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item]));
               return Array.from(uniqueMap.values());
             });
-
-            setHasMore(!!data.next_page && newPhotos.length > 0); // Check based on photos actually received
+            setHasMore(!!data.next_page && newPhotos.length > 0); 
       }
 
     } catch (error) {
@@ -122,7 +123,7 @@ export default function Home() {
         description: "Failed to fetch wallpapers. Please check your connection and try again.",
         variant: "destructive",
       });
-       setHasMore(false); // Stop trying to load more on error
+       setHasMore(false); 
     } finally {
       setLoading(false);
     }
@@ -130,43 +131,56 @@ export default function Home() {
 
 
   useEffect(() => {
-    // Fetch initial wallpapers based on default term and category
-    fetchWallpapers(searchTerm, category, 1);
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, category, fetchWallpapers]); // Rerun if category or searchTerm changes programmatically or initial values change.
+    fetchWallpapers(searchTerm, currentCategory, 1);
+  }, [searchTerm, currentCategory, fetchWallpapers]); 
 
 
-  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const newSearchTerm = formData.get('search') as string;
     const trimmedSearchTerm = newSearchTerm.trim();
+    const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper'; 
 
-    const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper'; // Use 'Wallpaper' if search is empty
-
-    // Reset and fetch regardless of term change because category might be the implicit difference
-    setSearchTerm(effectiveSearchTerm);
-    setPage(1); // Reset page number on new search
-    setWallpapers([]); // Clear existing wallpapers for the new search
-    setHasMore(true); // Assume there might be more pages for the new term
-    fetchWallpapers(effectiveSearchTerm, category, 1); // Use current category
+    if (effectiveSearchTerm !== searchTerm) {
+      setSearchTerm(effectiveSearchTerm);
+      setPage(1); 
+      setWallpapers([]); 
+      setHasMore(true); 
+      // fetchWallpapers will be triggered by useEffect on searchTerm change
+    } else {
+      // If term is same, but maybe category was changed externally or just re-submitting
+      setPage(1);
+      setWallpapers([]);
+      setHasMore(true);
+      fetchWallpapers(effectiveSearchTerm, currentCategory, 1);
+    }
   };
 
-   const handleCategoryChange = (newCategory: Category) => {
-       if (newCategory !== category) {
-           setCategory(newCategory);
+  const handleDeviceCategoryChange = (newCategory: Category) => {
+       if (newCategory !== currentCategory) {
+           setCurrentCategory(newCategory);
            setPage(1);
            setWallpapers([]);
            setHasMore(true);
-           fetchWallpapers(searchTerm, newCategory, 1); // Fetch with new category and current search term
+           // fetchWallpapers will be triggered by useEffect on currentCategory change
        }
    };
+
+   const handleWallpaperCategorySelect = (categoryValue: string) => {
+    setSearchTerm(categoryValue);
+    setPage(1);
+    setWallpapers([]);
+    setHasMore(true);
+    // fetchWallpapers will be triggered by useEffect due to searchTerm change
+  };
+
 
   const handleLoadMore = () => {
     if (!loading && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      fetchWallpapers(searchTerm, category, nextPage, true); // Fetch next page and append, using current category
+      fetchWallpapers(searchTerm, currentCategory, nextPage, true); 
     }
   };
 
@@ -178,21 +192,17 @@ export default function Home() {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    // Delay clearing the selected wallpaper to allow fade-out animation
     setTimeout(() => setSelectedWallpaper(null), 300);
   };
 
   const handleDownload = async () => {
     if (!selectedWallpaper) return;
-
     const photographerName = selectedWallpaper.photographer.replace(/[^a-zA-Z0-9_-\s]/g, '').replace(/\s+/g, '_');
     const filename = `wallify_${photographerName}_${selectedWallpaper.id}.jpg`;
-
     toast({
         title: "Download Starting",
         description: `Preparing ${filename} for download...`,
       });
-
     try {
       await downloadFile(selectedWallpaper.src.original, filename);
       toast({
@@ -209,189 +219,228 @@ export default function Home() {
     }
   };
 
-  // Determine which image source to use for the grid based on category
    const gridImageSrc = (wallpaper: PexelsPhoto) => {
-      // Prefer portrait for smartphone, landscape for desktop if available, fallback gracefully
-      if (category === 'desktop' && wallpaper.src.landscape) return wallpaper.src.landscape;
-      if (category === 'smartphone' && wallpaper.src.portrait) return wallpaper.src.portrait;
-      // Fallback logic: prefer medium or large based on category if primary is missing
-      if (category === 'desktop') return wallpaper.src.medium || wallpaper.src.large;
-      if (category === 'smartphone') return wallpaper.src.medium || wallpaper.src.large;
-      return wallpaper.src.large; // General fallback
+      if (currentCategory === 'desktop' && wallpaper.src.landscape) return wallpaper.src.landscape;
+      if (currentCategory === 'smartphone' && wallpaper.src.portrait) return wallpaper.src.portrait;
+      if (currentCategory === 'desktop') return wallpaper.src.medium || wallpaper.src.large;
+      if (currentCategory === 'smartphone') return wallpaper.src.medium || wallpaper.src.large;
+      return wallpaper.src.large; 
    };
 
-   // Determine aspect ratio for grid items based on category
-   const gridAspectRatio = category === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
-   // Determine image fill/contain based on category for grid
-   const gridImageFit = 'object-cover'; // Cover generally looks best for thumbnails
+   const gridAspectRatio = currentCategory === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
+   const gridImageFit = 'object-cover'; 
 
 
-   // Modal aspect ratio based on the *selected image*, not category, but constrained
    const modalAspectRatio = selectedWallpaper
     ? selectedWallpaper.width / selectedWallpaper.height > 1
-        ? 'aspect-video' // Landscape image
-        : 'aspect-[9/16]' // Portrait or square image
-    : gridAspectRatio; // Fallback to grid aspect ratio if no image selected
+        ? 'aspect-video' 
+        : 'aspect-[9/16]' 
+    : gridAspectRatio; 
+
+  const imageSchema = selectedWallpaper ? {
+    '@context': 'https://schema.org',
+    '@type': 'ImageObject',
+    name: selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`,
+    description: selectedWallpaper.alt || `High-resolution wallpaper by ${selectedWallpaper.photographer}. Dimensions: ${selectedWallpaper.width}x${selectedWallpaper.height}.`,
+    contentUrl: selectedWallpaper.src.original,
+    thumbnailUrl: selectedWallpaper.src.medium,
+    width: { '@type': 'Distance', value: selectedWallpaper.width, unitCode: 'E37' }, // E37 is UN/CEFACT code for pixel
+    height: { '@type': 'Distance', value: selectedWallpaper.height, unitCode: 'E37' },
+    author: {
+      '@type': 'Person',
+      name: selectedWallpaper.photographer,
+      url: selectedWallpaper.photographer_url,
+    },
+    copyrightHolder: {
+      '@type': 'Person',
+      name: selectedWallpaper.photographer,
+      url: selectedWallpaper.photographer_url,
+    },
+    license: 'https://www.pexels.com/license/',
+    acquireLicensePage: selectedWallpaper.url,
+    provider: {
+      '@type': 'Organization',
+      name: 'Pexels',
+      url: 'https://www.pexels.com',
+    },
+  } as WithContext<ImageObject> : null;
+
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
-        {/* Reduced padding from py-4 to py-2 */}
-        <div className="container mx-auto max-w-4xl px-4 py-3 sm:py-4 flex flex-col items-center gap-3">
-             {/* Reduced title size from text-3xl to text-2xl */}
-            <h1 className="text-2xl sm:text-3xl font-bold text-center text-primary">Wallify</h1>
-             <form onSubmit={handleSearch} className="flex gap-2 items-center w-full max-w-md sm:max-w-lg md:max-w-xl">
-                <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground pointer-events-none" />
-                    <Input
-                        type="search"
-                        name="search"
-                        placeholder={`Search ${category} wallpapers...`}
-                        className="pl-9 sm:pl-10 w-full bg-secondary border-border focus:ring-2 focus:ring-ring text-foreground rounded-full h-9 sm:h-10 text-sm sm:text-base" 
-                        defaultValue={searchTerm}
-                        aria-label="Search wallpapers"
-                    />
-                </div>
-                <Button type="submit" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-9 sm:h-10 px-4 sm:px-5 text-sm sm:text-base">
-                    <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-1.5" /> <span className="hidden md:inline">Search</span>
-                </Button>
-            </form>
-             {/* Category Selection Tabs */}
-             <Tabs value={category} onValueChange={(value) => handleCategoryChange(value as Category)} className="w-full max-w-xs sm:max-w-sm">
-                 {/* Reduced height of TabsList */}
-                <TabsList className="grid w-full grid-cols-2 h-9">
-                    <TabsTrigger value="smartphone" className="text-xs sm:text-sm">Smartphone</TabsTrigger>
-                    <TabsTrigger value="desktop" className="text-xs sm:text-sm">Desktop</TabsTrigger>
-                </TabsList>
-            </Tabs>
-        </div>
-      </header>
+    <>
+      {imageSchema && <StructuredData data={imageSchema} />}
+      <div className="flex flex-col min-h-screen bg-background text-foreground">
+        <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
+          <div className="container mx-auto max-w-6xl px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <Link href="/" className="text-2xl sm:text-3xl font-bold text-primary self-center sm:self-auto">Wallify</Link>
+              
+              <form onSubmit={handleSearchSubmit} className="flex gap-2 items-center w-full sm:w-auto sm:flex-grow max-w-md">
+                  <div className="relative flex-grow">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                          type="search"
+                          name="search"
+                          placeholder={`Search wallpapers...`}
+                          className="pl-9 w-full bg-secondary border-border focus:ring-2 focus:ring-ring text-foreground rounded-full h-9 text-sm" 
+                          defaultValue={searchTerm}
+                          aria-label="Search wallpapers"
+                      />
+                  </div>
+                  <Button type="submit" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-9 px-4 text-sm">
+                      <Search className="h-3.5 w-3.5" />
+                  </Button>
+              </form>
 
-      <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
-        {loading && wallpapers.length === 0 ? (
-            // Skeleton loading state for initial load
-             <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4`}>
-                {[...Array(15)].map((_, i) => (
-                 <Skeleton key={`initial-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
-                ))}
-            </div>
-        ) : wallpapers.length > 0 ? (
-            // Display wallpapers
-             <>
-                <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4`}>
-                    {wallpapers.map((wallpaper) => (
-                    <div
-                        key={`${wallpaper.id}-${category}`} 
-                        className={`relative ${gridAspectRatio} w-full rounded-lg overflow-hidden cursor-pointer group transition-transform duration-300 ease-in-out hover:scale-105 shadow-md hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background`}
-                        onClick={() => openModal(wallpaper)}
-                        role="button"
-                        aria-label={`View wallpaper: ${wallpaper.alt || `by ${wallpaper.photographer}`}`}
-                        tabIndex={0} // Make it focusable
-                        onKeyDown={(e) => e.key === 'Enter' && openModal(wallpaper)}
-                    >
-                        <Image
-                        src={gridImageSrc(wallpaper)} // Use dynamic source
-                        alt={wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                        className={`${gridImageFit} transition-opacity duration-300 group-hover:opacity-80`} // Use dynamic fit
-                        placeholder="blur"
-                        blurDataURL={wallpaper.src.tiny}
-                        data-ai-hint={`${category === 'desktop' ? 'desktop background' : 'phone wallpaper'} ${wallpaper.alt}`} // AI hint
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2 justify-between">
-                         <p className="text-white text-xs truncate drop-shadow-sm">{wallpaper.alt || `By ${wallpaper.photographer}`}</p>
-                         <Download size={16} className="text-white/80 shrink-0 ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        </div>
-                    </div>
+              <div className="flex items-center gap-2">
+                <Tabs value={currentCategory} onValueChange={(value) => handleDeviceCategoryChange(value as Category)} className="w-auto">
+                  <TabsList className="grid grid-cols-2 h-9">
+                      <TabsTrigger value="smartphone" className="text-xs px-3">Phone</TabsTrigger>
+                      <TabsTrigger value="desktop" className="text-xs px-3">Desktop</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-9 w-9">
+                      <Menu className="h-4 w-4" />
+                      <span className="sr-only">Categories</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Popular Categories</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {wallpaperCategories.map((cat) => (
+                      <DropdownMenuItem key={cat.value} onSelect={() => handleWallpaperCategorySelect(cat.value)}>
+                        {cat.label}
+                      </DropdownMenuItem>
                     ))}
-                </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+          </div>
+        </header>
 
-                 {/* Load More Button */}
-                 {hasMore && !loading && (
-                    <div className="flex justify-center mt-8 mb-4">
-                        <Button onClick={handleLoadMore} variant="outline" size="lg">
-                        Load More
-                        </Button>
-                    </div>
-                 )}
+        <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
+          {loading && wallpapers.length === 0 ? (
+               <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4`}>
+                  {[...Array(15)].map((_, i) => (
+                   <Skeleton key={`initial-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+                  ))}
+              </div>
+          ) : wallpapers.length > 0 ? (
+               <>
+                  <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4`}>
+                      {wallpapers.map((wallpaper) => (
+                      <div
+                          key={`${wallpaper.id}-${currentCategory}`} 
+                          className={`relative ${gridAspectRatio} w-full rounded-lg overflow-hidden cursor-pointer group transition-transform duration-300 ease-in-out hover:scale-105 shadow-md hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background`}
+                          onClick={() => openModal(wallpaper)}
+                          role="button"
+                          aria-label={`View wallpaper: ${wallpaper.alt || `by ${wallpaper.photographer}`}`}
+                          tabIndex={0} 
+                          onKeyDown={(e) => e.key === 'Enter' && openModal(wallpaper)}
+                      >
+                          <Image
+                          src={gridImageSrc(wallpaper)} 
+                          alt={wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                          className={`${gridImageFit} transition-opacity duration-300 group-hover:opacity-80`} 
+                          placeholder="blur"
+                          blurDataURL={wallpaper.src.tiny}
+                          data-ai-hint={`${currentCategory === 'desktop' ? 'desktop background' : 'phone wallpaper'} ${wallpaper.alt}`} 
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-2 justify-between">
+                           <p className="text-white text-xs truncate drop-shadow-sm">{wallpaper.alt || `By ${wallpaper.photographer}`}</p>
+                           <Download size={16} className="text-white/80 shrink-0 ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          </div>
+                      </div>
+                      ))}
+                  </div>
 
-                 {/* Loading indicator for pagination */}
-                 {loading && wallpapers.length > 0 && ( // Show pagination loader only if wallpapers already exist
-                     <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4`}>
-                        {[...Array(5)].map((_, i) => (
-                         <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
-                        ))}
-                    </div>
-                 )}
-            </>
-        ) : (
-             // No results found state
-             !loading && <p className="text-center text-muted-foreground mt-10 text-lg">No {category} wallpapers found for "{searchTerm}". Try a different search term or category.</p>
-        )}
-      </main>
+                   {hasMore && !loading && (
+                      <div className="flex justify-center mt-8 mb-4">
+                          <Button onClick={handleLoadMore} variant="outline" size="lg">
+                          Load More
+                          </Button>
+                      </div>
+                   )}
 
-      {/* Preview Modal */}
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent className="max-w-md w-[90vw] p-0 border-none !rounded-xl overflow-hidden shadow-2xl bg-card/80 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
-                 {selectedWallpaper && (
-                <>
-                     <DialogHeader className="absolute top-0 left-0 right-0 z-30 p-4 flex flex-row justify-between items-start bg-gradient-to-b from-black/50 to-transparent">
-                         <div className="flex flex-col mr-4 overflow-hidden">
-                             <DialogTitle className="text-base font-semibold text-white truncate">{selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`}</DialogTitle>
-                             <DialogDescription className="text-xs text-gray-300">
-                                Photo by <a href={selectedWallpaper.photographer_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">{selectedWallpaper.photographer}</a>
-                             </DialogDescription>
-                         </div>
-                         {/* Close button positioned top-right */}
-                         <DialogClose
-                            onClick={closeModal}
-                            className="text-white bg-black/30 rounded-full p-1.5 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black/30 transition-colors shrink-0"
-                            aria-label="Close preview"
-                         >
-                            <X size={18} />
-                        </DialogClose>
-                    </DialogHeader>
+                   {loading && wallpapers.length > 0 && ( 
+                       <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4`}>
+                          {[...Array(5)].map((_, i) => (
+                           <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
+                          ))}
+                      </div>
+                   )}
+              </>
+          ) : (
+               !loading && <p className="text-center text-muted-foreground mt-10 text-lg">No {currentCategory} wallpapers found for "{searchTerm}". Try a different search term or category.</p>
+          )}
+        </main>
 
-                    {/* Image Container - Dynamically adjust aspect ratio based on the image */}
-                     <div className={`relative w-full ${modalAspectRatio} max-h-[75vh] bg-black/50 flex items-center justify-center overflow-hidden`}>
-                         <Image
-                            src={selectedWallpaper.src.large2x || selectedWallpaper.src.original} // Use higher res for modal
-                            alt={selectedWallpaper.alt || `Preview of wallpaper by ${selectedWallpaper.photographer}`}
-                            fill
-                            sizes="(max-width: 768px) 90vw, 50vw"
-                            className="object-contain" // Contain ensures the whole image is visible
-                            priority // Load this image first as it's in the modal
-                            placeholder="blur"
-                            blurDataURL={selectedWallpaper.src.tiny}
-                         />
-                    </div>
+          <Dialog open={isModalOpen} onOpenChange={(isOpen) => {
+            if (!isOpen) closeModal();
+            else setIsModalOpen(true);
+          }}>
+              <DialogContent className="max-w-md w-[90vw] p-0 border-none !rounded-xl overflow-hidden shadow-2xl bg-card/80 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+                   {selectedWallpaper && (
+                  <>
+                       <DialogHeader className="absolute top-0 left-0 right-0 z-30 p-4 flex flex-row justify-between items-start bg-gradient-to-b from-black/50 to-transparent">
+                           <div className="flex flex-col mr-4 overflow-hidden">
+                               <DialogTitle className="text-base font-semibold text-white truncate">{selectedWallpaper.alt || `Wallpaper by ${selectedWallpaper.photographer}`}</DialogTitle>
+                               <DialogDescription className="text-xs text-gray-300">
+                                  Photo by <a href={selectedWallpaper.photographer_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">{selectedWallpaper.photographer}</a>
+                               </DialogDescription>
+                           </div>
+                           <DialogClose
+                              onClick={closeModal}
+                              className="text-white bg-black/30 rounded-full p-1.5 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black/30 transition-colors shrink-0"
+                              aria-label="Close preview"
+                           >
+                              <X size={18} />
+                          </DialogClose>
+                      </DialogHeader>
 
-                     <DialogFooter className="absolute bottom-0 left-0 right-0 z-30 p-4 flex justify-end bg-gradient-to-t from-black/50 to-transparent">
-                        <Button onClick={handleDownload} className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md rounded-full px-5 py-2.5 text-sm">
-                            <Download className="mr-2 h-4 w-4" />
-                            Download Original
-                        </Button>
-                    </DialogFooter>
-                 </>
-                )}
-            </DialogContent>
-        </Dialog>
+                       <div className={`relative w-full ${modalAspectRatio} max-h-[75vh] bg-black/50 flex items-center justify-center overflow-hidden`}>
+                           <Image
+                              src={selectedWallpaper.src.large2x || selectedWallpaper.src.original} 
+                              alt={selectedWallpaper.alt || `Preview of wallpaper by ${selectedWallpaper.photographer}`}
+                              fill
+                              sizes="(max-width: 768px) 90vw, 50vw"
+                              className="object-contain" 
+                              priority 
+                              placeholder="blur"
+                              blurDataURL={selectedWallpaper.src.tiny}
+                           />
+                      </div>
 
-      <footer className="text-center text-muted-foreground text-xs mt-auto py-3 sm:py-4 border-t border-border bg-secondary/50">
-         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2 px-4">
-            <p className="text-center md:text-left">
-                Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>.
-                App built with Firebase & Next.js.
-            </p>
-            <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
-                <Link href="/about" className="underline hover:text-accent">About</Link>
-                <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>
-                <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
-                <Link href="/contact" className="underline hover:text-accent">Contact</Link>
-            </nav>
-        </div>
-      </footer>
-    </div>
+                       <DialogFooter className="absolute bottom-0 left-0 right-0 z-30 p-4 flex justify-end bg-gradient-to-t from-black/50 to-transparent">
+                          <Button onClick={handleDownload} className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md rounded-full px-5 py-2.5 text-sm">
+                              <Download className="mr-2 h-4 w-4" />
+                              Download Original
+                          </Button>
+                      </DialogFooter>
+                   </>
+                  )}
+              </DialogContent>
+          </Dialog>
+
+        <footer className="text-center text-muted-foreground text-xs mt-auto py-3 sm:py-4 border-t border-border bg-secondary/50">
+           <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2 px-4">
+              <p className="text-center md:text-left">
+                  Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>.
+                  App built with Next.js.
+              </p>
+              <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
+                  <Link href="/about" className="underline hover:text-accent">About</Link>
+                  <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>
+                  <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
+                  <Link href="/contact" className="underline hover:text-accent">Contact</Link>
+              </nav>
+          </div>
+        </footer>
+      </div>
+    </>
   );
 }

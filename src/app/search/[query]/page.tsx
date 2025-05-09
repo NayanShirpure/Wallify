@@ -6,19 +6,11 @@ import React from 'react'; // Import React for React.use
 
 export async function generateStaticParams() {
   // Return an array of params for popular search queries.
-  // This ensures these pages are pre-rendered at build time.
-  // The category will be handled by searchParams within the client component.
   const params = popularSearchQueries.map((query) => ({
     query: encodeURIComponent(query),
   }));
-  // Deduplicate queries, as popularSearchQueries might have duplicates or generate them if combined with categories
-  // For this simplified version, we assume popularSearchQueries are unique or deduplication is handled if needed.
-  // A more robust deduplication could be `Array.from(new Set(params.map(p => p.query))).map(q => ({ query: q }))`
-  // but the current filter is also fine if popularSearchQueries are mostly unique.
   return params.filter((value, index, self) =>
-    index === self.findIndex((t) => (
-      t.query === value.query
-    ))
+    index === self.findIndex((t) => t.query === value.query)
   );
 }
 
@@ -37,33 +29,30 @@ export async function generateMetadata(
       canonical: pageUrl,
     },
     openGraph: {
-        title: `Search: ${query} (${category}) - Wallify`,
-        description: `Find stunning ${category} wallpapers for "${query}" on Wallify.`,
-        url: pageUrl,
-        siteName: 'Wallify',
-        type: 'website',
-        images: [
-            {
-                url: `${BARE_URL}/icon.png`, 
-                width: 512,
-                height: 512,
-                alt: 'Wallify Logo',
-            },
-        ],
+      title: `Search: ${query} (${category}) - Wallify`,
+      description: `Find stunning ${category} wallpapers for "${query}" on Wallify.`,
+      url: pageUrl,
+      siteName: 'Wallify',
+      type: 'website',
+      images: [
+        {
+          url: `${BARE_URL}/icon.png`,
+          width: 512,
+          height: 512,
+          alt: 'Wallify Logo',
+        },
+      ],
     },
   };
 }
 
-
 interface PageProps {
-  params: Promise<{ query: string }>; // Updated to Promise
+  params: { query: string }; // Change this back to synchronous
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default function Page({ params: paramsPromise, searchParams }: PageProps) {
-  const params = React.use(paramsPromise); // Unwrap the promise
-
-  const initialQuery = params.query ? decodeURIComponent(params.query) : 'Wallpaper'; 
+export default function Page({ params, searchParams }: PageProps) {
+  const initialQuery = params.query ? decodeURIComponent(params.query) : 'Wallpaper';
   const initialCategory = (searchParams?.category as Category) || 'smartphone';
 
   return (

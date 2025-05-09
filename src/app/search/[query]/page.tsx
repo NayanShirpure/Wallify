@@ -47,11 +47,22 @@ export async function generateMetadata(
 }
 
 interface PageProps {
-  params: { query: string }; // Change this back to synchronous
+  params: Promise<{ query: string }>; // Correctly use Promise here
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default function Page({ params, searchParams }: PageProps) {
+export default function Page({ params: paramsPromise, searchParams }: PageProps) {
+  // Await the Promise to extract query value
+  const [params, setParams] = React.useState<{ query: string } | null>(null);
+
+  React.useEffect(() => {
+    paramsPromise.then((resolvedParams) => setParams(resolvedParams));
+  }, [paramsPromise]);
+
+  if (!params) {
+    return <div>Loading...</div>; // Handle loading state
+  }
+
   const initialQuery = params.query ? decodeURIComponent(params.query) : 'Wallpaper';
   const initialCategory = (searchParams?.category as Category) || 'smartphone';
 

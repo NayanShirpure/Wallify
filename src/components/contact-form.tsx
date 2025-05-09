@@ -6,10 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useForm, ValidationError, SubmissionError } from '@formspree/react';
+import { useForm, ValidationError, FieldValues, SubmissionError } from '@formspree/react';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
-// import type { FieldValues, } from '@formspree/react';
+// import type {  } from '@formspree/react';
 
 
 export function ContactForm() {

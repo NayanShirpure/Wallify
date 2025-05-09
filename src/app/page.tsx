@@ -357,7 +357,7 @@ export default function Home() {
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-1.5 sm:p-2 justify-between">
                            <p className="text-white text-[10px] sm:text-xs truncate drop-shadow-sm">{wallpaper.alt || `By ${wallpaper.photographer}`}</p>
-                           <Download size={14} sm-size={16} className="text-white/80 shrink-0 ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                           <Download size={14} className="text-white/80 shrink-0 ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 sm:size-4" />
                           </div>
                       </div>
                       ))}
@@ -403,7 +403,7 @@ export default function Home() {
                               className="text-white bg-black/30 rounded-full p-1 sm:p-1.5 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-black/30 transition-colors shrink-0"
                               aria-label="Close preview"
                            >
-                              <X size={16} sm-size={18}/>
+                              <X size={16} className="sm:size-[18px]" />
                           </DialogClose>
                       </DialogHeader>
 
@@ -448,3 +448,4 @@ export default function Home() {
     </>
   );
 }
+

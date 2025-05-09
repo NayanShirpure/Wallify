@@ -1,8 +1,8 @@
-
 // No 'use client' here
 import type { Metadata } from 'next';
 import { popularSearchQueries, type Category } from '@/config/categories';
 import SearchPageClient from '@/components/search-page-client';
+import React from 'react'; // Import React for React.use
 
 export async function generateStaticParams() {
   // Return an array of params for popular search queries.
@@ -56,11 +56,13 @@ export async function generateMetadata(
 
 
 interface PageProps {
-  params: { query: string };
+  params: Promise<{ query: string }>; // Updated to Promise
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default function Page({ params, searchParams }: PageProps) {
+export default function Page({ params: paramsPromise, searchParams }: PageProps) {
+  const params = React.use(paramsPromise); // Unwrap the promise
+
   const initialQuery = params.query ? decodeURIComponent(params.query) : 'Wallpaper'; 
   const initialCategory = (searchParams?.category as Category) || 'smartphone';
 

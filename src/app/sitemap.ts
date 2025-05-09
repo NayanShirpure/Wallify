@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next';
 // Removed: import { popularSearchQueries, deviceCategories, type Category } from '@/config/categories';
 export const dynamic = 'force-static'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [

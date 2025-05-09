@@ -1,4 +1,4 @@
-// No 'use client' here
+// No 'use client' here as React.use can be used in Server Components
 import type { Metadata } from 'next';
 import { popularSearchQueries, type Category } from '@/config/categories';
 import SearchPageClient from '@/components/search-page-client';
@@ -36,7 +36,7 @@ export async function generateMetadata(
       type: 'website',
       images: [
         {
-          url: `${BARE_URL}/icon.png`,
+          url: `${BARE_URL}/icon.png`, // Ensure icon.png exists in public
           width: 512,
           height: 512,
           alt: 'Wallify Logo',
@@ -47,24 +47,17 @@ export async function generateMetadata(
 }
 
 interface PageProps {
-  params: Promise<{ query: string }>; // Correctly use Promise here
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: Promise<{ query: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined } | undefined>; // Updated to Promise
 }
 
-export default function Page({ params: paramsPromise, searchParams }: PageProps) {
-  // Await the Promise to extract query value
-  const [params, setParams] = React.useState<{ query: string } | null>(null);
+export default function Page({ params: paramsPromise, searchParams: searchParamsPromise }: PageProps) {
+  // Await the Promise to extract query value using React.use
+  const resolvedParams = React.use(paramsPromise);
+  const resolvedSearchParams = searchParamsPromise ? React.use(searchParamsPromise) : undefined;
 
-  React.useEffect(() => {
-    paramsPromise.then((resolvedParams) => setParams(resolvedParams));
-  }, [paramsPromise]);
-
-  if (!params) {
-    return <div>Loading...</div>; // Handle loading state
-  }
-
-  const initialQuery = params.query ? decodeURIComponent(params.query) : 'Wallpaper';
-  const initialCategory = (searchParams?.category as Category) || 'smartphone';
+  const initialQuery = resolvedParams.query ? decodeURIComponent(resolvedParams.query) : 'Wallpaper';
+  const initialCategory = (resolvedSearchParams?.category as Category) || 'smartphone';
 
   return (
     <SearchPageClient

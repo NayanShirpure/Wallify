@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { StructuredData } from '@/components/structured-data';
-import type { WebPage } from 'schema-dts';
+import type { WebPage, WithContext } from 'schema-dts'; // Added WithContext
 
 export const metadata: Metadata = {
   title: 'Terms and Conditions - Wallify',
@@ -14,7 +14,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.co
 
 export default function TermsConditionsPage() {
   const today = new Date().toISOString().split('T')[0];
-  const webPageSchema: WebPage = {
+  const webPageSchema: WithContext<WebPage> = { // Added WithContext
+    '@context': 'https://schema.org', // Added @context
     '@type': 'WebPage',
     name: 'Terms and Conditions - Wallify',
     url: `${BASE_URL}/terms-conditions`,

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ContactForm } from '@/components/contact-form'; 
 import { StructuredData } from '@/components/structured-data';
-import type { ContactPage as SchemaContactPage } from 'schema-dts'; // Renamed to avoid conflict
+import type { ContactPage as SchemaContactPage, WithContext } from 'schema-dts'; // Renamed to avoid conflict and added WithContext
 
 export const metadata: Metadata = {
   title: 'Contact Us - Wallify',
@@ -14,7 +14,8 @@ export const metadata: Metadata = {
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
 
 export default function ContactPage() {
-  const contactPageSchema: SchemaContactPage = {
+  const contactPageSchema: WithContext<SchemaContactPage> = { // Correctly typed and defined
+    '@context': 'https://schema.org', // Added @context
     '@type': 'ContactPage',
     name: 'Contact Wallify',
     url: `${BASE_URL}/contact`,

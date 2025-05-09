@@ -1,8 +1,7 @@
-
 'use client';
 
 import type { PexelsPhoto, PexelsResponse } from '@/types/pexels';
-import { useState, useEffect, useCallback } from 'react';
+import { use, useState, useEffect, useCallback } from 'react'; // Added 'use'
 import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
@@ -30,7 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { wallpaperCategories, type Category } from '@/config/categories'; // Updated import
+import { wallpaperCategories, type Category } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject, WithContext } from 'schema-dts';
 import { useRouter } from 'next/navigation';
@@ -41,13 +40,15 @@ const PEXELS_API_URL = 'https://api.pexels.com/v1';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
 
 interface SearchPageProps {
-  params: { query: string };
+  params: Promise<{ query: string }>; // Updated to Promise
 }
 
-export default function SearchPage({ params }: SearchPageProps) {
+export default function SearchPage({ params: paramsPromise }: SearchPageProps) { // Renamed prop to paramsPromise
+  const params = use(paramsPromise); // Unwrap the promise
+
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialQuery = decodeURIComponent(params.query);
+  const initialQuery = decodeURIComponent(params.query); // params is now the resolved object
   const initialCategory = (searchParams.get('category') as Category) || 'smartphone';
 
   const [searchTerm, setSearchTerm] = useState(initialQuery);
@@ -139,8 +140,8 @@ export default function SearchPage({ params }: SearchPageProps) {
     setSearchTerm(initialQuery);
     setCurrentCategory(initialCategory);
     setPage(1);
-    setWallpapers([]); // Clear previous results before new fetch
-    setHasMore(true); // Reset hasMore for new search/category
+    setWallpapers([]); 
+    setHasMore(true); 
     fetchWallpapers(initialQuery, initialCategory, 1);
   }, [initialQuery, initialCategory, fetchWallpapers]);
 
@@ -151,14 +152,13 @@ export default function SearchPage({ params }: SearchPageProps) {
     const trimmedSearchTerm = newSearchTermInput.trim();
     const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper';
 
-    // Only navigate if search term or category actually changes from the current URL state
     if (effectiveSearchTerm !== initialQuery || currentCategory !== initialCategory) {
         router.push(`/search/${encodeURIComponent(effectiveSearchTerm)}?category=${currentCategory}`);
     }
   };
   
   const handleDeviceCategoryChange = (newCategory: Category) => {
-    if (newCategory !== currentCategory) { // Check against current component state, not initialCategory
+    if (newCategory !== currentCategory) { 
       router.push(`/search/${encodeURIComponent(searchTerm)}?category=${newCategory}`);
     }
   };
@@ -262,7 +262,7 @@ export default function SearchPage({ params }: SearchPageProps) {
                           placeholder="Search..."
                           className="pl-8 w-full bg-secondary border-border focus:ring-1 focus:ring-ring text-foreground rounded-full h-8 text-sm" 
                           defaultValue={searchTerm}
-                          key={searchTerm} // Re-render input if search term changes via URL
+                          key={searchTerm} 
                           aria-label="Search wallpapers"
                       />
                   </div>

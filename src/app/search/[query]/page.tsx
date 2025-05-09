@@ -46,13 +46,24 @@ export async function generateMetadata(
   };
 }
 
+// PageProps now expects the 'params' to be a Promise
 interface PageProps {
-  params: { query: string }; // Directly use { query: string }, not Promise
+  params: Promise<{ query: string }>; // Must be a Promise
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export default async function Page({ params, searchParams }: PageProps) {
+export default function Page({ params: paramsPromise, searchParams }: PageProps) {
   // Await the params to make sure they're resolved
+  const [params, setParams] = React.useState<{ query: string } | null>(null);
+
+  React.useEffect(() => {
+    paramsPromise.then(setParams); // Resolve the promise to get the query
+  }, [paramsPromise]);
+
+  if (!params) {
+    return <div>Loading...</div>; // Show a loading state until params are resolved
+  }
+
   const query = params.query ? decodeURIComponent(params.query) : 'Wallpaper';
   const initialCategory = (searchParams?.category as Category) || 'smartphone';
 

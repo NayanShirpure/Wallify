@@ -1,30 +1,9 @@
 
 import type { MetadataRoute } from 'next';
-import type { Category } from '@/types/pexels';
+import { popularSearchQueries, deviceCategories, type Category } from '@/config/categories'; // Updated import
 export const dynamic = 'force-static'
-// IMPORTANT: Set NEXT_PUBLIC_SITE_URL in your environment variables (e.g., .env.local or Vercel/Netlify settings)
-// Example: NEXT_PUBLIC_SITE_URL=https://www.yourdomain.com
+
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
-
-const popularSearchQueries = [
-  'Wallpaper',
-  'Nature',
-  'Technology',
-  'Abstract',
-  'Minimalist',
-  'Space',
-  'Animals',
-  'City',
-  'Food',
-  'Travel',
-  'Dark',
-  'Pattern',
-  'Office',
-  'Sky',
-  'Vintage',
-];
-
-const deviceCategories: Category[] = ['smartphone', 'desktop'];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [
@@ -35,7 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: '/terms-conditions', changeFrequency: 'yearly', priority: 0.3 },
   ].map((page) => ({
     url: `${BASE_URL}${page.url}`,
-    lastModified: new Date(),
+    lastModified: new Date().toISOString(),
     changeFrequency: page.changeFrequency as MetadataRoute.Sitemap[0]['changeFrequency'],
     priority: page.priority,
   }));
@@ -43,7 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const searchCategoryPages = popularSearchQueries.flatMap((query) =>
     deviceCategories.map((deviceCategory) => ({
       url: `${BASE_URL}/search/${encodeURIComponent(query)}?category=${deviceCategory}`,
-      lastModified: new Date(),
+      lastModified: new Date().toISOString(),
       changeFrequency: 'weekly' as MetadataRoute.Sitemap[0]['changeFrequency'],
       priority: 0.6,
     }))

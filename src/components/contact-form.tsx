@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { useForm, ValidationError } from '@formspree/react';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
-import type { FieldValues } from 'react-hook-form'; // For SubmissionError type if needed
+import type { FieldValues, SubmissionError } from '@formspree/react';
+
 
 export function ContactForm() {
   const [state, handleSubmit] = useForm("xeoggpoa"); 
@@ -25,10 +26,12 @@ export function ContactForm() {
       // e.g., if you have access to the form event: event.target.reset();
       // For @formspree/react, the form often clears/resets its state internally on success.
     } else if (state.errors) {
-      // Check for form-level errors and display them as toasts
-      // state.errors is a SubmissionError object which has a formErrors array
-      if (state.errors.formErrors.length > 0) {
-        state.errors.formErrors.forEach(error => {
+      // state.errors is a SubmissionError object
+      const submissionError = state.errors as SubmissionError<FieldValues>;
+      const formErrors = submissionError.getFormErrors();
+
+      if (formErrors.length > 0) {
+        formErrors.forEach(error => {
           toast({
             title: "Submission Error",
             description: error.message || "An unexpected error occurred.",
@@ -37,14 +40,14 @@ export function ContactForm() {
         });
       }
       // Field-specific errors are handled by the <ValidationError /> components below.
-      // If you wanted to toast for field errors as well, you could iterate state.errors.getAllFieldErrors()
+      // If you wanted to toast for field errors as well, you could iterate submissionError.getAllFieldErrors()
     }
   }, [state.succeeded, state.errors, toast]);
 
 
   if (state.succeeded) {
       return (
-        <Card className="w-full max-w-lg border-border bg-card">
+        <Card className="w-full max-w-lg border-border bg-card shadow-lg">
             <CardHeader>
                 <CardTitle className="text-xl text-card-foreground">Message Sent!</CardTitle>
                 <CardDescription className="text-muted-foreground">
@@ -56,7 +59,7 @@ export function ContactForm() {
   }
 
   return (
-    <Card className="w-full max-w-lg border-border bg-card">
+    <Card className="w-full max-w-lg border-border bg-card shadow-lg">
       <CardHeader>
         <CardTitle className="text-xl text-card-foreground">Send us a message</CardTitle>
         <CardDescription className="text-muted-foreground">
@@ -84,9 +87,9 @@ export function ContactForm() {
             {state.submitting ? 'Sending...' : 'Send Message'}
           </Button>
           {/* This section correctly displays form-level errors inline below the button */}
-          {state.errors && state.errors.formErrors.length > 0 && (
+          {state.errors && (state.errors as SubmissionError<FieldValues>).getFormErrors().length > 0 && (
             <div className="mt-2 text-sm text-destructive">
-                {state.errors.formErrors.map((error, index) => (
+                {(state.errors as SubmissionError<FieldValues>).getFormErrors().map((error, index) => (
                     <p key={`form-error-${index}`}>{error.message}</p>
                 ))}
             </div>
@@ -96,4 +99,3 @@ export function ContactForm() {
     </Card>
   );
 }
-

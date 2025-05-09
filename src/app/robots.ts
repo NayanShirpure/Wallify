@@ -1,6 +1,6 @@
 
 import type { MetadataRoute } from 'next';
-
+export const dynamic = 'force-static'
 // IMPORTANT: Set NEXT_PUBLIC_SITE_URL in your environment variables (e.g., .env.local or Vercel/Netlify settings)
 // Example: NEXT_PUBLIC_SITE_URL=https://www.yourdomain.com
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';

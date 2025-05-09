@@ -1,20 +1,43 @@
-
 'use client';
+
+import { useEffect } from 'react';
+import { useForm as useFormspreeForm, ValidationError } from '@formspree/react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { useForm, ValidationError } from '@formspree/react';
-import type { FieldValues, SubmissionError } from '@formspree/react';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
 
+// Zod schema for validation
+const schema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  email: z.string().email({ message: 'Enter a valid email.' }),
+  message: z.string().min(10, { message: 'Message must be at least 10 characters.' }),
+});
+
+type FormData = z.infer<typeof schema>;
 
 export function ContactForm() {
-  const [state, handleSubmit] = useForm("xeoggpoa"); 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
+
+  const [state, submitToFormspree] = useFormspreeForm("xeoggpoa");
   const { toast } = useToast();
+
+  const onSubmit: SubmitHandler<FormData> = (data) => {
+    submitToFormspree(data);
+  };
 
   useEffect(() => {
     if (state.succeeded) {
@@ -22,36 +45,32 @@ export function ContactForm() {
         title: "Message Sent!",
         description: "Thanks for reaching out. We'll get back to you soon.",
       });
-      // Formspree typically resets the form on success.
+      reset(); // Clear form fields
     } else if (state.errors) {
-      // state.errors is a SubmissionError object
-      // Get form-level errors
       const formErrors = state.errors.getFormErrors();
       if (formErrors.length > 0) {
-        formErrors.forEach((error: { message: string; code?: string | null }) => {
+        formErrors.forEach((error) =>
           toast({
             title: "Submission Error",
             description: error.message || "An unexpected error occurred.",
             variant: "destructive",
-          });
-        });
+          })
+        );
       }
-      // Field-level errors are handled by the <ValidationError /> components below.
     }
-  }, [state.succeeded, state.errors, toast]);
-
+  }, [state.succeeded, state.errors, toast, reset]);
 
   if (state.succeeded) {
-      return (
-        <Card className="w-full max-w-lg border-border bg-card shadow-lg">
-            <CardHeader>
-                <CardTitle className="text-xl text-card-foreground">Message Sent!</CardTitle>
-                <CardDescription className="text-muted-foreground">
-                Thank you for contacting us. We will get back to you shortly.
-                </CardDescription>
-            </CardHeader>
-        </Card>
-      );
+    return (
+      <Card className="w-full max-w-lg border-border bg-card shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-xl text-card-foreground">Message Sent!</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Thank you for contacting us. We will get back to you shortly.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
   }
 
   return (
@@ -63,33 +82,47 @@ export function ContactForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-card-foreground">Name</Label>
-            <Input id="name" name="name" placeholder="Your Name" required className="bg-input border-input text-foreground" />
-            <ValidationError prefix="Name" field="name" errors={state.errors} className="text-destructive text-sm" />
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              {...register('name')}
+              placeholder="Your Name"
+              className={`bg-input border-input text-foreground ${errors.name ? 'border-destructive ring-destructive' : ''}`}
+            />
+            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            <ValidationError prefix="Name" field="name" errors={state.errors} className="text-sm text-destructive" />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-card-foreground">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="your@email.com" required className="bg-input border-input text-foreground" />
-            <ValidationError prefix="Email" field="email" errors={state.errors} className="text-destructive text-sm" />
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              {...register('email')}
+              placeholder="you@example.com"
+              className={`bg-input border-input text-foreground ${errors.email ? 'border-destructive ring-destructive' : ''}`}
+            />
+            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            <ValidationError prefix="Email" field="email" errors={state.errors} className="text-sm text-destructive" />
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="message" className="text-card-foreground">Message</Label>
-            <Textarea id="message" name="message" placeholder="Your message..." required className="min-h-[100px] bg-input border-input text-foreground" />
-            <ValidationError prefix="Message" field="message" errors={state.errors} className="text-destructive text-sm" />
+            <Label htmlFor="message">Message</Label>
+            <Textarea
+              id="message"
+              {...register('message')}
+              placeholder="Your message..."
+              className={`min-h-[100px] bg-input border-input text-foreground ${errors.message ? 'border-destructive ring-destructive' : ''}`}
+            />
+            {errors.message && <p className="text-sm text-destructive">{errors.message.message}</p>}
+            <ValidationError prefix="Message" field="message" errors={state.errors} className="text-sm text-destructive" />
           </div>
+
           <Button type="submit" disabled={state.submitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
             {state.submitting ? 'Sending...' : 'Send Message'}
           </Button>
-          {/* Display form-level errors (errors without a 'field' property) inline below the button */}
-          {state.errors && state.errors.getFormErrors().length > 0 && (
-            <div className="mt-2 text-sm text-destructive">
-                {state.errors.getFormErrors().map((error: { message: string; code?: string | null }, index: number) => (
-                    <p key={`form-error-${index}`}>{error.message}</p>
-                ))}
-            </div>
-          )}
         </form>
       </CardContent>
     </Card>

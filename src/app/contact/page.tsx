@@ -8,7 +8,8 @@ import type { ContactPage as SchemaContactPage, WithContext } from 'schema-dts';
 
 export const metadata: Metadata = {
   title: 'Contact Us - Wallify',
-  description: 'Contact Wallify support',
+  description: 'Get in touch with Wallify for support, feedback, or inquiries. We are here to help you with your wallpaper needs and questions.',
+  keywords: ['contact Wallify', 'Wallify support', 'wallpaper app feedback', 'customer service Wallify', 'inquiries Wallify', 'help with wallpapers', 'report issue Wallify'],
 };
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -17,9 +18,9 @@ export default function ContactPage() {
   const contactPageSchema: WithContext<SchemaContactPage> = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
-    name: 'Contact Wallify',
+    name: 'Contact Wallify Support and Feedback',
     url: `${BASE_URL}/contact`,
-    description: 'Get in touch with Wallify for support, feedback, or inquiries.',
+    description: 'Reach out to the Wallify team for any support, feedback, or questions regarding our wallpaper application.',
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `${BASE_URL}/contact`,
@@ -39,14 +40,14 @@ export default function ContactPage() {
               </span>
             </Link>
             <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2 truncate max-w-[calc(100%-80px)] sm:max-w-[calc(100%-120px)] md:max-w-[calc(100%-200px)]">
-              Contact Us
+              Contact Wallify
             </h1>
           </div>
         </header>
         <main className="flex flex-grow flex-col items-center justify-center p-4 py-8 md:p-6 md:py-12">
           <div className="mb-8 text-center">
             <h2 className="text-2xl font-semibold text-primary">Get in Touch</h2>
-            <p className="text-muted-foreground">Have questions or feedback? Let us know!</p>
+            <p className="text-muted-foreground">Have questions, feedback, or just want to say hi? Let us know!</p>
           </div>
           <ContactForm />
         </main>
@@ -56,13 +57,13 @@ export default function ContactPage() {
                  © 2025 Wallify. All rights reserved.
               </p>
               <div className="flex items-center gap-x-3 sm:gap-x-4">
-                <a href="https://x.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-muted-foreground hover:text-accent transition-colors">
+                <a href="https://x.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Twitter" className="text-muted-foreground hover:text-accent transition-colors">
                   <Twitter className="h-4 w-4" />
                 </a>
-                <a href="https://instagram.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-accent transition-colors">
+                <a href="https://instagram.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Instagram" className="text-muted-foreground hover:text-accent transition-colors">
                   <Instagram className="h-4 w-4" />
                 </a>
-                <a href="https://github.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-muted-foreground hover:text-accent transition-colors">
+                <a href="https://github.com/NayanShirpure/Wallify" target="_blank" rel="noopener noreferrer" aria-label="Wallify on GitHub" className="text-muted-foreground hover:text-accent transition-colors">
                   <Github className="h-4 w-4" />
                 </a>
               </div>

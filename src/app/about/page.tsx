@@ -9,7 +9,8 @@ import type { Organization, WithContext } from 'schema-dts';
 
 export const metadata: Metadata = {
   title: 'About Us - Wallify',
-  description: 'Learn more about Wallify and our mission.',
+  description: 'Learn more about Wallify, our mission to provide a vast collection of stunning, high-quality wallpapers, and the team dedicated to enhancing your digital experience.',
+  keywords: ['about Wallify', 'Wallify mission', 'wallpaper application', 'Pexels wallpapers', 'digital personalization', 'desktop backgrounds', 'mobile wallpapers', 'Wallify team', 'free wallpaper source'],
 };
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -20,13 +21,18 @@ export default function AboutUsPage() {
     '@type': 'Organization',
     name: 'Wallify',
     url: BASE_URL,
-    logo: `${BASE_URL}/icon.png`,
-    description: 'Wallify is your ultimate destination for stunning, high-quality wallpapers for all your devices.',
+    logo: `${BASE_URL}/icon.png`, // Assuming you have an icon.png in public
+    description: 'Wallify is your ultimate destination for stunning, high-quality wallpapers for all your devices, sourced from Pexels.',
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'Customer Support',
       url: `${BASE_URL}/contact`,
     },
+    sameAs: [ // Added social links for organization schema
+        "https://x.com/NayanShirpure",
+        "https://instagram.com/NayanShirpure",
+        "https://github.com/NayanShirpure/Wallify"
+    ]
   };
 
   return (
@@ -43,7 +49,7 @@ export default function AboutUsPage() {
               </span>
             </Link>
             <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap px-2 truncate max-w-[calc(100%-80px)] sm:max-w-[calc(100%-120px)] md:max-w-[calc(100%-200px)]">
-              About Us
+              About Wallify
             </h1>
           </div>
         </header>
@@ -51,12 +57,13 @@ export default function AboutUsPage() {
           <div className="space-y-12">
             <section className="text-center">
               <Image
-                src="https://picsum.photos/seed/wallify-logo-concept/300/150"
-                alt="Wallify App Concept Art"
+                src="https://picsum.photos/seed/wallify-brand-visual/300/150"
+                alt="Wallify Brand Visual"
                 width={300}
                 height={150}
                 className="mx-auto mb-6 rounded-lg shadow-lg"
-                data-ai-hint="app logo brand"
+                data-ai-hint="app brand concept"
+                priority
               />
               <h2 className="text-3xl font-bold text-primary mb-4">Welcome to Wallify</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
@@ -77,7 +84,7 @@ export default function AboutUsPage() {
                 <CardContent>
                   <p className="text-muted-foreground leading-relaxed">
                     Our mission is simple: to provide a seamless and enjoyable experience for discovering and
-                    downloading beautiful wallpapers. We curate a vast collection of images, ensuring there's
+                    downloading beautiful wallpapers. We curate a vast collection of images from Pexels, ensuring there's
                     something for every taste and style, for both your smartphone and desktop.
                   </p>
                 </CardContent>
@@ -101,7 +108,7 @@ export default function AboutUsPage() {
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-primary">High Quality</h4>
+                    <h4 className="font-semibold text-primary">High Quality Images</h4>
                     <p className="text-muted-foreground leading-relaxed">
                       All wallpapers are sourced from Pexels, ensuring high resolution and stunning clarity for
                       your devices.
@@ -117,7 +124,7 @@ export default function AboutUsPage() {
                    <div>
                     <h4 className="font-semibold text-primary">Optimized for All Devices</h4>
                     <p className="text-muted-foreground leading-relaxed">
-                      Easily switch between smartphone and desktop optimized wallpapers to find the perfect fit.
+                      Easily switch between smartphone (portrait) and desktop (landscape) optimized wallpapers to find the perfect fit.
                     </p>
                   </div>
                 </CardContent>
@@ -158,13 +165,13 @@ export default function AboutUsPage() {
                   © 2025 Wallify. All rights reserved.
               </p>
               <div className="flex items-center gap-x-3 sm:gap-x-4">
-                <a href="https://x.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-muted-foreground hover:text-accent transition-colors">
+                <a href="https://x.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Twitter" className="text-muted-foreground hover:text-accent transition-colors">
                   <Twitter className="h-4 w-4" />
                 </a>
-                <a href="https://instagram.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-accent transition-colors">
+                <a href="https://instagram.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Instagram" className="text-muted-foreground hover:text-accent transition-colors">
                   <Instagram className="h-4 w-4" />
                 </a>
-                <a href="https://github.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-muted-foreground hover:text-accent transition-colors">
+                <a href="https://github.com/NayanShirpure/Wallify" target="_blank" rel="noopener noreferrer" aria-label="Wallify on GitHub" className="text-muted-foreground hover:text-accent transition-colors">
                   <Github className="h-4 w-4" />
                 </a>
               </div>

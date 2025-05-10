@@ -15,7 +15,7 @@ const inter = Inter({
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 const SITE_NAME = 'Wallify';
-const SITE_DESCRIPTION = 'Beautiful wallpapers curated for you.';
+const SITE_DESCRIPTION = 'Discover and download stunning, high-quality wallpapers for your desktop and smartphone. Personalize your digital space with Wallify.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL), // Recommended for resolving openGraph.images relative paths
@@ -24,6 +24,7 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  keywords: ['wallpapers', 'backgrounds', 'desktop wallpapers', 'phone wallpapers', 'HD wallpapers', '4K wallpapers', 'Pexels', 'free wallpapers', 'high quality backgrounds', 'Wallify', 'wallpaper app', 'custom backgrounds', 'device personalization'],
   manifest: '/manifest.json',
   themeColor: '#1F2937', // Dark Gray, matches dark theme background
   openGraph: {
@@ -31,16 +32,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     url: BASE_URL,
     siteName: SITE_NAME,
-    // Images array removed to allow Next.js to automatically pick up
-    // src/app/opengraph-image.(jpg|png|tsx) if it exists.
-    // images: [
-    //   {
-    //     url: '/opengraph-image.png', // Path relative to the public folder
-    //     width: 1200,
-    //     height: 630,
-    //     alt: `${SITE_NAME} - ${SITE_DESCRIPTION}`,
-    //   },
-    // ],
+    // images are handled by opengraph-image.tsx or twitter-image.tsx conventions
     locale: 'en_US',
     type: 'website',
   },
@@ -48,10 +40,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    // Images array removed to allow Next.js to automatically pick up
-    // src/app/twitter-image.(jpg|png|tsx) or fallback to OpenGraph image.
-    // images: [`${BASE_URL}/opengraph-image.png`], // Must be an absolute URL
-    // creator: '@yourtwitterhandle', // Optional: Add Twitter handle
+    // images are handled by opengraph-image.tsx or twitter-image.tsx conventions
+    // creator: '@NayanShirpure', // Optional: Add Twitter handle if it's for the site owner
   },
   robots: {
     index: true,
@@ -83,6 +73,11 @@ export default function RootLayout({
     name: SITE_NAME,
     url: BASE_URL,
     description: SITE_DESCRIPTION,
+    potentialAction: { // Added to indicate the site's search functionality
+        '@type': 'SearchAction',
+        target: `${BASE_URL}/?search={search_term_string}`,
+        'query-input': 'required name=search_term_string',
+    }
   };
 
   return (

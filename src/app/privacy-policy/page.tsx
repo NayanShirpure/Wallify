@@ -7,7 +7,8 @@ import type { WebPage, WithContext } from 'schema-dts';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy - Wallify',
-  description: 'Wallify Privacy Policy',
+  description: 'Read the Wallify Privacy Policy to understand how we collect, use, and protect your information while you use our wallpaper application powered by Pexels API.',
+  keywords: ['Wallify privacy policy', 'data privacy', 'user information', 'Pexels API privacy', 'Formspree privacy', 'wallpaper app security', 'information collection', 'data usage Wallify'],
 };
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -16,15 +17,15 @@ export default function PrivacyPolicyPage() {
   const today = new Date().toISOString().split('T')[0];
   const webPageSchema: WithContext<WebPage> = {
     '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: 'Privacy Policy - Wallify',
+    '@type': 'WebPage', // Could also use 'PrivacyPolicyPage' if more specific schema elements are needed
+    name: 'Privacy Policy for Wallify Wallpaper Application',
     url: `${BASE_URL}/privacy-policy`,
-    description: 'Wallify Privacy Policy.',
+    description: 'Official Privacy Policy for the Wallify application, detailing data handling practices.',
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `${BASE_URL}/privacy-policy`,
     },
-    datePublished: today,
+    datePublished: "2024-01-01", // Set a fixed publish date or use site build time
     dateModified: today,
   };
 
@@ -47,60 +48,70 @@ export default function PrivacyPolicyPage() {
           </div>
         </header>
         <main className="container mx-auto max-w-4xl p-4 py-8 md:p-6 md:py-12">
-          <article className="prose prose-invert max-w-none dark:prose-invert">
-            <h2 className="text-2xl font-semibold text-primary">Privacy Policy</h2>
-            <p>Last updated: {new Date().toLocaleDateString()}</p>
+          <article className="prose prose-invert max-w-none dark:prose-invert prose-headings:text-primary prose-a:text-accent prose-a:no-underline hover:prose-a:underline">
+            <h2 className="text-2xl font-semibold text-primary">Privacy Policy for Wallify</h2>
+            <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
 
             <p>
               Welcome to Wallify! We are committed to protecting your privacy. This Privacy Policy explains how we
-              collect, use, disclose, and safeguard your information when you use our application.
+              handle information when you use our application ("Service"). By using Wallify, you agree to the
+              collection and use of information in accordance with this policy.
             </p>
 
-            <h3 className="text-xl font-semibold text-primary mt-6">Information We Collect</h3>
+            <h3 className="text-xl font-semibold text-primary mt-6">Information Collection and Use</h3>
             <p>
-              Wallify does not collect any personally identifiable information from its users. We use the Pexels API
-              to fetch wallpapers based on your search queries and category selections. Your search terms and category
-              preferences are processed to provide the service but are not stored or linked to you personally by Wallify.
+              Wallify does not require user registration and does not collect any personally identifiable information (PII)
+              from its users directly. Our primary function is to display wallpapers fetched from the Pexels API.
             </p>
-            <p>
-              Usage Data: We may collect anonymous usage data through standard web analytics tools to understand how
-              users interact with Wallify. This data helps us improve the application but does not identify individual users.
-            </p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>
+                <strong>Search Queries:</strong> When you use the search feature, your search terms are sent to the Pexels API
+                to retrieve relevant wallpapers. These search terms are not stored by Wallify or linked to any individual user by us.
+              </li>
+              <li>
+                <strong>Category Selections:</strong> Your selection of device categories (e.g., smartphone, desktop) is used to
+                filter results from the Pexels API. This preference is not stored by Wallify.
+              </li>
+              <li>
+                <strong>Usage Data (Analytics):</strong> We may use standard web analytics tools (e.g., Vercel Analytics, if deployed on Vercel, or a similar privacy-focused tool) to collect anonymous, aggregated usage data. This data helps us understand how users interact with Wallify (e.g., popular features, general user flow) to improve the application. This data does not identify individual users and is not PII.
+              </li>
+            </ul>
 
-            <h3 className="text-xl font-semibold text-primary mt-6">How We Use Information</h3>
-            <p>
-              The primary use of any collected information (like search terms) is to provide and improve the Wallify service.
-              Anonymous usage data helps us understand trends and enhance user experience.
-            </p>
 
             <h3 className="text-xl font-semibold text-primary mt-6">Third-Party Services</h3>
             <p>
-              Wallify relies on the Pexels API (<a href="https://www.pexels.com/api/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://www.pexels.com/api/</a>)
-              to provide wallpaper images. Your interactions with the Pexels service through Wallify are subject to Pexels'
-              own Privacy Policy (<a href="https://www.pexels.com/privacy-policy/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://www.pexels.com/privacy-policy/</a>) and Terms of Service
-              (<a href="https://www.pexels.com/terms-of-service/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://www.pexels.com/terms-of-service/</a>). We recommend you review their policies.
+              Wallify relies on the following third-party services:
             </p>
-            <p>
-              For contact forms, Wallify uses Formspree (<a href="https://formspree.io/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://formspree.io/</a>).
-              Information you submit via the contact form is processed by Formspree according to their Privacy Policy (<a href="https://formspree.io/legal/privacy-policy/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://formspree.io/legal/privacy-policy/</a>).
-            </p>
+            <ul className="list-disc pl-5 space-y-1">
+                <li>
+                    <strong>Pexels API:</strong> Wallify uses the Pexels API (<a href="https://www.pexels.com/api/" target="_blank" rel="noopener noreferrer">https://www.pexels.com/api/</a>) to source wallpaper images. Your interactions with the Pexels service through Wallify are subject to Pexels' own Privacy Policy (<a href="https://www.pexels.com/privacy-policy/" target="_blank" rel="noopener noreferrer">https://www.pexels.com/privacy-policy/</a>) and Terms of Service (<a href="https://www.pexels.com/terms-of-service/" target="_blank" rel="noopener noreferrer">https://www.pexels.com/terms-of-service/</a>). We recommend you review their policies.
+                </li>
+                <li>
+                    <strong>Formspree:</strong> For our contact form, Wallify uses Formspree (<a href="https://formspree.io/" target="_blank" rel="noopener noreferrer">https://formspree.io/</a>). If you choose to contact us via the form, the information you submit (e.g., name, email, message) is processed by Formspree according to their Privacy Policy (<a href="https://formspree.io/legal/privacy-policy/" target="_blank" rel="noopener noreferrer">https://formspree.io/legal/privacy-policy/</a>). Wallify receives this information to respond to your inquiry but does not store it beyond the scope of addressing your communication.
+                </li>
+            </ul>
+
 
             <h3 className="text-xl font-semibold text-primary mt-6">Data Security</h3>
             <p>
-              While Wallify itself does not store personal data, we implement reasonable measures to protect the application
-              and its users. However, no electronic transmission or storage is 100% secure.
+              Since Wallify does not store personal data of its users, the risk associated with data breaches from our end is minimal. We rely on the security measures implemented by our third-party service providers (Pexels, Formspree, and hosting platform like Vercel/GitHub Pages). While we strive to use commercially acceptable means to protect any information processed, no method of transmission over the Internet or method of electronic storage is 100% secure.
+            </p>
+
+            <h3 className="text-xl font-semibold text-primary mt-6">Children's Privacy</h3>
+            <p>
+                Our Service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13.
             </p>
 
             <h3 className="text-xl font-semibold text-primary mt-6">Changes to This Privacy Policy</h3>
             <p>
               We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new
-              Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes.
+              Privacy Policy on this page and updating the "Last updated" date. You are advised to review this Privacy Policy periodically for any changes.
+              Changes to this Privacy Policy are effective when they are posted on this page.
             </p>
 
             <h3 className="text-xl font-semibold text-primary mt-6">Contact Us</h3>
             <p>
-              If you have any questions about this Privacy Policy, please contact us via the{' '}
-              <Link href="/contact" className="underline hover:text-accent">Contact Us</Link> page.
+              If you have any questions about this Privacy Policy, please <Link href="/contact">contact us</Link>.
             </p>
           </article>
         </main>
@@ -110,13 +121,13 @@ export default function PrivacyPolicyPage() {
                  © 2025 Wallify. All rights reserved.
               </p>
               <div className="flex items-center gap-x-3 sm:gap-x-4">
-                <a href="https://x.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-muted-foreground hover:text-accent transition-colors">
+                <a href="https://x.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Twitter" className="text-muted-foreground hover:text-accent transition-colors">
                   <Twitter className="h-4 w-4" />
                 </a>
-                <a href="https://instagram.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-accent transition-colors">
+                <a href="https://instagram.com/NayanShirpure" target="_blank" rel="noopener noreferrer" aria-label="Wallify on Instagram" className="text-muted-foreground hover:text-accent transition-colors">
                   <Instagram className="h-4 w-4" />
                 </a>
-                <a href="https://github.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-muted-foreground hover:text-accent transition-colors">
+                <a href="https://github.com/NayanShirpure/Wallify" target="_blank" rel="noopener noreferrer" aria-label="Wallify on GitHub" className="text-muted-foreground hover:text-accent transition-colors">
                   <Github className="h-4 w-4" />
                 </a>
               </div>

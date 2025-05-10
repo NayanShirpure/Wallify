@@ -31,4 +31,4 @@ export interface PexelsResponse {
 }
 
 export type Category = 'smartphone' | 'desktop';
-export type DeviceOrientationCategory = "portrait" | "landscape" | 'desktop';
+export type DeviceOrientationCategory = 'smartphone' | 'desktop';

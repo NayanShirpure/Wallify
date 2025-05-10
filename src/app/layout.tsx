@@ -5,7 +5,7 @@ import './globals.css';
 import { cn } from '@/lib/utils'; // Import cn utility
 import { Toaster } from "@/components/ui/toaster"; // Import Toaster
 import { StructuredData } from '@/components/structured-data';
-import type { WithContext, WebSite } from 'schema-dts';
+import type { WithContext, WebSite, SearchAction } from 'schema-dts'; // Import SearchAction
 
 
 const inter = Inter({
@@ -25,14 +25,21 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   keywords: ['wallpapers', 'backgrounds', 'desktop wallpapers', 'phone wallpapers', 'HD wallpapers', '4K wallpapers', 'Pexels', 'free wallpapers', 'high quality backgrounds', 'Wallify', 'wallpaper app', 'custom backgrounds', 'device personalization'],
-  manifest: '/manifest.json',
+  manifest: '/manifest.json', // Assuming manifest.json is in public folder
   themeColor: '#1F2937', // Dark Gray, matches dark theme background
   openGraph: {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
     url: BASE_URL,
     siteName: SITE_NAME,
-    // images are handled by opengraph-image.tsx or twitter-image.tsx conventions
+    images: [ // Default OpenGraph image
+      {
+        url: `${BASE_URL}/opengraph-image.png`, // Path to your opengraph-image.png in /public
+        width: 1200,
+        height: 630,
+        alt: `Wallify - Stunning Wallpapers for Desktop and Smartphone`,
+      },
+    ],
     locale: 'en_US',
     type: 'website',
   },
@@ -40,8 +47,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    // images are handled by opengraph-image.tsx or twitter-image.tsx conventions
-    // creator: '@NayanShirpure', // Optional: Add Twitter handle if it's for the site owner
+     images: [`${BASE_URL}/twitter-image.png`], // Path to your twitter-image.png in /public
+    site: '@NayanShirpure', // Site's Twitter handle
+    creator: '@NayanShirpure', // Content creator's Twitter handle
   },
   robots: {
     index: true,
@@ -55,9 +63,10 @@ export const metadata: Metadata = {
     },
   },
   // icons: { // Add icons if you have them in public folder
-  //   icon: '/favicon.ico',
-  //   shortcut: '/favicon-16x16.png',
-  //   apple: '/apple-touch-icon.png',
+  //   icon: '/favicon.ico', // Standard favicon
+  //   shortcut: '/favicon-16x16.png', // For older browsers
+  //   apple: '/apple-touch-icon.png', // For Apple devices
+  //   // You can add more sizes or specific icons like android-chrome-192x192.png etc.
   // },
 };
 
@@ -73,11 +82,11 @@ export default function RootLayout({
     name: SITE_NAME,
     url: BASE_URL,
     description: SITE_DESCRIPTION,
-    potentialAction: { // Added to indicate the site's search functionality
+    potentialAction: {
         '@type': 'SearchAction',
         target: `${BASE_URL}/?search={search_term_string}`,
         'query-input': 'required name=search_term_string',
-    }
+    } as SearchAction, // Cast to SearchAction to satisfy stricter Leaf types
   };
 
   return (
@@ -87,7 +96,7 @@ export default function RootLayout({
       </head>
       <body className={cn(
         inter.variable,
-        'antialiased dark'
+        'antialiased dark' // Apply dark mode by default and Inter font
        )}>
         {children}
         <Toaster />

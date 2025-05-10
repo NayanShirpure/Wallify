@@ -1,11 +1,11 @@
 
 'use client';
 
-import type { PexelsPhoto, PexelsResponse } from '@/types/pexels';
-import { useState, useEffect, useCallback } from 'react';
+import type { PexelsPhoto, PexelsResponse, Category as DeviceOrientationCategory } from '@/types/pexels'; // Updated type import
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Metadata } from 'next';
+// import type { Metadata } from 'next'; // Cannot export metadata from client component
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Download, X, Menu, Twitter, Instagram, Github } from 'lucide-react';
@@ -30,16 +30,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { wallpaperCategories, type Category } from '@/config/categories';
+import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories'; // Updated import
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject, WebPage, WithContext } from 'schema-dts';
-
-// Metadata for the Explorer page
-// export const metadata: Metadata = { // Cannot export metadata from client component
-//   title: 'Explore Wallpapers - Wallify',
-//   description: 'Discover a vast collection of stunning, high-quality wallpapers. Explore different categories and find the perfect background for your desktop or smartphone on Wallify.',
-//   keywords: ['explore wallpapers', 'wallpaper gallery', 'Pexels wallpapers', 'discover backgrounds', 'new wallpapers', 'wallpaper categories', 'Wallify explorer'],
-// };
 
 
 const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
@@ -48,8 +41,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.gith
 
 
 export default function ExplorerPage() {
-  const [searchTerm, setSearchTerm] = useState('Wallpaper');
-  const [currentCategory, setCurrentCategory] = useState<Category>('smartphone');
+  const [searchTerm, setSearchTerm] = useState('Explore');
+  const [currentCategory, setCurrentCategory] = useState<DeviceOrientationCategory>('smartphone'); // Updated type
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
@@ -58,7 +51,7 @@ export default function ExplorerPage() {
   const [hasMore, setHasMore] = useState(true);
   const { toast } = useToast();
 
-   const fetchWallpapers = useCallback(async (query: string, category: Category, pageNum: number = 1, append: boolean = false) => {
+   const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => { // Updated type
     if (!PEXELS_API_KEY) {
       console.error("Pexels API key is missing.");
       if (process.env.NODE_ENV === 'development') {
@@ -81,7 +74,7 @@ export default function ExplorerPage() {
 
     setLoading(true);
     const orientation = category === 'desktop' ? 'landscape' : 'portrait';
-    let finalQuery = query.trim() || 'Explore'; // Default to 'Explore' if query is empty for this page
+    let finalQuery = query.trim() || 'Explore';
 
     try {
       const apiUrl = `${PEXELS_API_URL}/search?query=${encodeURIComponent(finalQuery)}&orientation=${orientation}&per_page=30&page=${pageNum}`;
@@ -141,7 +134,7 @@ export default function ExplorerPage() {
   useEffect(() => {
     fetchWallpapers(searchTerm, currentCategory, 1, false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, currentCategory, fetchWallpapers]);
+  }, [searchTerm, currentCategory]);
 
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -157,7 +150,7 @@ export default function ExplorerPage() {
     setHasMore(true);
   };
 
-  const handleDeviceCategoryChange = (newCategory: Category) => {
+  const handleDeviceCategoryChange = (newCategory: DeviceOrientationCategory) => { // Updated type
        if (newCategory !== currentCategory) {
            setCurrentCategory(newCategory);
            setPage(1);
@@ -303,10 +296,11 @@ export default function ExplorerPage() {
               </form>
 
               <div className="flex items-center gap-2">
-                <Tabs value={currentCategory} onValueChange={(value) => handleDeviceCategoryChange(value as Category)} className="w-auto">
+                <Tabs value={currentCategory} onValueChange={(value) => handleDeviceCategoryChange(value as DeviceOrientationCategory)} className="w-auto">
                   <TabsList className="grid grid-cols-2 h-8 text-xs">
-                      <TabsTrigger value="smartphone" className="text-xs px-2.5 py-1">Phone</TabsTrigger>
-                      <TabsTrigger value="desktop" className="text-xs px-2.5 py-1">Desktop</TabsTrigger>
+                    {deviceOrientationTabs.map(opt => (
+                      <TabsTrigger key={opt.value} value={opt.value} className="text-xs px-2.5 py-1">{opt.label}</TabsTrigger>
+                    ))}
                   </TabsList>
                 </Tabs>
 
@@ -317,13 +311,19 @@ export default function ExplorerPage() {
                       <span className="sr-only">Wallpaper Categories Menu</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 max-h-80 overflow-y-auto">
-                    <DropdownMenuLabel>Wallpaper Categories</DropdownMenuLabel>
+                  <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-y-auto">
+                    <DropdownMenuLabel>Filter Wallpapers By</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {wallpaperCategories.map((cat) => (
-                      <DropdownMenuItem key={cat.value} onSelect={() => handleWallpaperCategorySelect(cat.value)}>
-                        {cat.label}
-                      </DropdownMenuItem>
+                    {wallpaperFilterCategoryGroups.map((group, groupIndex) => (
+                      <React.Fragment key={group.groupLabel}>
+                        <DropdownMenuLabel className="text-xs text-muted-foreground px-2 pt-2">{group.groupLabel}</DropdownMenuLabel>
+                        {group.categories.map((cat) => (
+                          <DropdownMenuItem key={cat.value} onSelect={() => handleWallpaperCategorySelect(cat.value)}>
+                            {cat.label}
+                          </DropdownMenuItem>
+                        ))}
+                         {groupIndex < wallpaperFilterCategoryGroups.length - 1 && <DropdownMenuSeparator />}
+                      </React.Fragment>
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -460,7 +460,7 @@ export default function ExplorerPage() {
 
                 <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center sm:justify-end">
                     <Link href="/" className="underline hover:text-accent">Home</Link>
-                    <Link href="/explorer" className="underline hover:text-accent">Explore</Link>
+                    {/* <Link href="/explorer" className="underline hover:text-accent">Explore</Link> Removed as this is explorer page */}
                     <Link href="/about" className="underline hover:text-accent">About</Link>
                     <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>
                     <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
@@ -473,5 +473,3 @@ export default function ExplorerPage() {
     </>
   );
 }
-
-    

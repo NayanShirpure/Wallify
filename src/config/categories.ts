@@ -1,5 +1,5 @@
 
-import type { Category } from '@/types/pexels';
+import type { Category as DeviceOrientationCategory } from '@/types/pexels'; // Renamed for clarity
 
 export const popularSearchQueries: string[] = [
   'Wallpaper',
@@ -34,36 +34,67 @@ export const popularSearchQueries: string[] = [
   'Seasonal',
 ];
 
-export const deviceCategories: Category[] = ['smartphone', 'desktop'];
+export interface WallpaperFilterCategory {
+  label: string;
+  value: string; // This will be used as the search query
+}
 
-export const wallpaperCategories: { label: string; value: string }[] = [
-  { label: 'Nature', value: 'Nature' },
-  { label: 'Technology', value: 'Technology' },
-  { label: 'Abstract', value: 'Abstract' },
-  { label: 'Minimalist', value: 'Minimalist' },
-  { label: 'Space', value: 'Space' },
-  { label: 'Animals', value: 'Animals' },
-  { label: 'Cityscapes', value: 'City' },
-  { label: 'Food & Drink', value: 'Food' },
-  { label: 'Travel', value: 'Travel' },
-  { label: 'Dark Mode', value: 'Dark' },
-  { label: 'Patterns', value: 'Pattern' },
-  { label: 'Vintage', value: 'Vintage' },
-  { label: 'Gradients', value: 'Gradient' },
-  { label: 'Textures', value: 'Texture' },
-  { label: 'Mountains', value: 'Mountains' },
-  { label: 'Forests', value: 'Forest' },
-  { label: 'Oceans', value: 'Ocean' },
-  { label: 'Flowers', value: 'Flowers' },
-  { label: 'Artistic', value: 'Art' },
-  { label: 'Illustrations', value: 'Illustration' },
-  { label: 'Cute & Fun', value: 'Cute' },
-  { label: 'Gaming', value: 'Gaming' },
-  { label: 'Cars', value: 'Car' },
-  { label: 'Sports', value: 'Sports' },
-  { label: 'Music', value: 'Music' },
-  { label: 'Holidays', value: 'Holiday' },
-  { label: 'Seasonal', value: 'Seasonal' },
+export interface CategoryGroup {
+  groupLabel: string;
+  categories: WallpaperFilterCategory[];
+}
+
+// This list controls the Tabs for Smartphone/Desktop (orientation)
+export const deviceOrientationTabs: { label: string; value: DeviceOrientationCategory }[] = [
+  { label: 'Phone', value: 'smartphone' },
+  { label: 'Desktop', value: 'desktop' },
 ];
 
-export type { Category };
+// These are for the Dropdown Menu to refine search queries
+export const wallpaperFilterCategoryGroups: CategoryGroup[] = [
+  {
+    groupLabel: "By Type",
+    categories: [
+      { label: "Abstract", value: "Abstract" },
+      { label: "Nature", value: "Nature" },
+      { label: "Animals", value: "Animals" },
+      { label: "Space", value: "Space" },
+      { label: "Minimal", value: "Minimalist" },
+      { label: "3D Renders", value: "3D Renders" },
+      { label: "Aesthetic", value: "Aesthetic" },
+      { label: "Anime", value: "Anime" },
+      { label: "Cars", value: "Cars" },
+      { label: "Architecture", value: "Architecture" },
+    ],
+  },
+  {
+    groupLabel: "By Device/Resolution Focus",
+    categories: [
+      { label: "Tablet", value: "Tablet Wallpaper" },
+      { label: "4K", value: "4K Ultra HD" }, // Changed for potentially better search results
+      { label: "Ultrawide", value: "Ultrawide Monitor" }, // Changed for potentially better search results
+    ],
+  },
+  {
+    groupLabel: "By Color Palette",
+    categories: [
+      { label: "Dark", value: "Dark" },
+      { label: "Light", value: "Light" },
+      { label: "Pastel", value: "Pastel Colors" },
+      { label: "Neon", value: "Neon Lights" }, // Changed for potentially better search results
+    ],
+  },
+  {
+    groupLabel: "By Mood",
+    categories: [
+      { label: "Calm", value: "Calm Peaceful Serene" },
+      { label: "Energetic", value: "Energetic Vibrant Dynamic" },
+      { label: "Moody", value: "Moody Atmospheric" },
+      { label: "Vintage", value: "Vintage Retro Old" },
+      { label: "Futuristic", value: "Futuristic Sci-Fi Cyberpunk" },
+    ],
+  },
+];
+
+// Exporting DeviceOrientationCategory for use in pages
+export type { DeviceOrientationCategory };

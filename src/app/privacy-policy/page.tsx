@@ -1,7 +1,7 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Twitter, Instagram, Github } from 'lucide-react';
 import { StructuredData } from '@/components/structured-data';
 import type { WebPage, WithContext } from 'schema-dts';
 
@@ -14,8 +14,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.gith
 
 export default function PrivacyPolicyPage() {
   const today = new Date().toISOString().split('T')[0];
-  const webPageSchema: WithContext<WebPage> = { 
-    '@context': 'https://schema.org', 
+  const webPageSchema: WithContext<WebPage> = {
+    '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: 'Privacy Policy - Wallify',
     url: `${BASE_URL}/privacy-policy`,
@@ -80,6 +80,10 @@ export default function PrivacyPolicyPage() {
               own Privacy Policy (<a href="https://www.pexels.com/privacy-policy/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://www.pexels.com/privacy-policy/</a>) and Terms of Service
               (<a href="https://www.pexels.com/terms-of-service/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://www.pexels.com/terms-of-service/</a>). We recommend you review their policies.
             </p>
+            <p>
+              For contact forms, Wallify uses Formspree (<a href="https://formspree.io/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://formspree.io/</a>).
+              Information you submit via the contact form is processed by Formspree according to their Privacy Policy (<a href="https://formspree.io/legal/privacy-policy/" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">https://formspree.io/legal/privacy-policy/</a>).
+            </p>
 
             <h3 className="text-xl font-semibold text-primary mt-6">Data Security</h3>
             <p>
@@ -100,8 +104,29 @@ export default function PrivacyPolicyPage() {
             </p>
           </article>
         </main>
-         <footer className="mt-auto border-t border-border bg-secondary/50 py-4 text-center text-xs text-muted-foreground">
-          © 2025 Wallify. All rights reserved.
+         <footer className="text-center text-muted-foreground text-xs mt-auto py-3 sm:py-4 border-t border-border bg-background/50">
+           <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-3 px-4">
+              <p className="text-center md:text-left">
+                 © 2025 Wallify. All rights reserved.
+              </p>
+              <div className="flex items-center gap-x-3 sm:gap-x-4">
+                <a href="https://x.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-muted-foreground hover:text-accent transition-colors">
+                  <Twitter className="h-4 w-4" />
+                </a>
+                <a href="https://instagram.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-accent transition-colors">
+                  <Instagram className="h-4 w-4" />
+                </a>
+                <a href="https://github.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-muted-foreground hover:text-accent transition-colors">
+                  <Github className="h-4 w-4" />
+                </a>
+              </div>
+              <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
+                  <Link href="/" className="underline hover:text-accent">Home</Link>
+                  <Link href="/about" className="underline hover:text-accent">About</Link>
+                  <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
+                  <Link href="/contact" className="underline hover:text-accent">Contact</Link>
+              </nav>
+          </div>
         </footer>
       </div>
     </>

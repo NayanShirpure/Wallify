@@ -4,10 +4,10 @@
 import type { PexelsPhoto, PexelsResponse } from '@/types/pexels';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import Link from 'next/link'; 
+import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Download, X, Menu } from 'lucide-react';
+import { Search, Download, X, Menu, Twitter, Instagram, Github } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -29,19 +29,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { wallpaperCategories, type Category } from '@/config/categories'; 
+import { wallpaperCategories, type Category } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject, WithContext } from 'schema-dts';
 
 
-const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw"; 
+const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 
 export default function Home() {
-  const [searchTerm, setSearchTerm] = useState('Wallpaper'); 
-  const [currentCategory, setCurrentCategory] = useState<Category>('smartphone'); 
+  const [searchTerm, setSearchTerm] = useState('Wallpaper');
+  const [currentCategory, setCurrentCategory] = useState<Category>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
@@ -73,7 +73,7 @@ export default function Home() {
 
     setLoading(true);
     const orientation = category === 'desktop' ? 'landscape' : 'portrait';
-    let finalQuery = query.trim() || 'Wallpaper'; 
+    let finalQuery = query.trim() || 'Wallpaper';
 
     try {
       const apiUrl = `${PEXELS_API_URL}/search?query=${encodeURIComponent(finalQuery)}&orientation=${orientation}&per_page=30&page=${pageNum}`;
@@ -84,7 +84,7 @@ export default function Home() {
       });
 
       if (!response.ok) {
-         if (response.status === 401) { 
+         if (response.status === 401) {
             console.error("Pexels API key is invalid or unauthorized.");
             if (process.env.NODE_ENV === 'development') {
                  toast({
@@ -99,21 +99,21 @@ export default function Home() {
                     variant: "destructive",
                 });
              }
-             setHasMore(false); 
+             setHasMore(false);
          } else {
              console.error(`HTTP error! status: ${response.status}, URL: ${apiUrl}`);
              throw new Error(`HTTP error! status: ${response.status}`);
          }
       } else {
             const data: PexelsResponse = await response.json();
-            const newPhotos = data.photos || []; 
+            const newPhotos = data.photos || [];
 
             setWallpapers(prev => {
               const combined = append ? [...prev, ...newPhotos] : newPhotos;
               const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item]));
               return Array.from(uniqueMap.values());
             });
-            setHasMore(!!data.next_page && newPhotos.length > 0); 
+            setHasMore(!!data.next_page && newPhotos.length > 0);
       }
 
     } catch (error) {
@@ -123,7 +123,7 @@ export default function Home() {
         description: "Failed to fetch wallpapers. Please check your connection and try again.",
         variant: "destructive",
       });
-       setHasMore(false); 
+       setHasMore(false);
     } finally {
       setLoading(false);
     }
@@ -132,7 +132,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchWallpapers(searchTerm, currentCategory, 1);
-  }, [searchTerm, currentCategory, fetchWallpapers]); 
+  }, [searchTerm, currentCategory, fetchWallpapers]);
 
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -140,8 +140,8 @@ export default function Home() {
     const formData = new FormData(event.currentTarget);
     const newSearchTerm = formData.get('search') as string;
     const trimmedSearchTerm = newSearchTerm.trim();
-    const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper'; 
-    
+    const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper';
+
     setSearchTerm(effectiveSearchTerm);
     setPage(1);
     setWallpapers([]);
@@ -150,7 +150,7 @@ export default function Home() {
 
   const handleDeviceCategoryChange = (newCategory: Category) => {
        if (newCategory !== currentCategory) {
-           setCurrentCategory(newCategory); 
+           setCurrentCategory(newCategory);
            setPage(1);
            setWallpapers([]);
            setHasMore(true);
@@ -158,7 +158,7 @@ export default function Home() {
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    setSearchTerm(categoryValue); 
+    setSearchTerm(categoryValue);
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
@@ -169,7 +169,7 @@ export default function Home() {
     if (!loading && hasMore) {
       const nextPage = page + 1;
       setPage(nextPage);
-      fetchWallpapers(searchTerm, currentCategory, nextPage, true); 
+      fetchWallpapers(searchTerm, currentCategory, nextPage, true);
     }
   };
 
@@ -213,18 +213,18 @@ export default function Home() {
       if (currentCategory === 'smartphone' && wallpaper.src.portrait) return wallpaper.src.portrait;
       if (currentCategory === 'desktop') return wallpaper.src.large2x || wallpaper.src.large || wallpaper.src.original;
       if (currentCategory === 'smartphone') return wallpaper.src.large || wallpaper.src.medium || wallpaper.src.original;
-      return wallpaper.src.large; 
+      return wallpaper.src.large;
    };
 
    const gridAspectRatio = currentCategory === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
-   const gridImageFit = 'object-cover'; 
+   const gridImageFit = 'object-cover';
 
 
    const modalAspectRatio = selectedWallpaper
-    ? selectedWallpaper.width / selectedWallpaper.height > 1.2 
-        ? 'aspect-video' 
-        : 'aspect-[9/16]' 
-    : gridAspectRatio; 
+    ? selectedWallpaper.width / selectedWallpaper.height > 1.2
+        ? 'aspect-video'
+        : 'aspect-[9/16]'
+    : gridAspectRatio;
 
   const imageSchema = selectedWallpaper ? {
     '@context': 'https://schema.org',
@@ -233,7 +233,7 @@ export default function Home() {
     description: selectedWallpaper.alt || `High-resolution wallpaper by ${selectedWallpaper.photographer}. Dimensions: ${selectedWallpaper.width}x${selectedWallpaper.height}.`,
     contentUrl: selectedWallpaper.src.original,
     thumbnailUrl: selectedWallpaper.src.medium,
-    width: { '@type': 'Distance', value: selectedWallpaper.width, unitCode: 'E37' }, 
+    width: { '@type': 'Distance', value: selectedWallpaper.width, unitCode: 'E37' },
     height: { '@type': 'Distance', value: selectedWallpaper.height, unitCode: 'E37' },
     author: {
       '@type': 'Person',
@@ -262,7 +262,7 @@ export default function Home() {
         <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
           <div className="container mx-auto max-w-7xl px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3">
               <Link href="/" className="text-xl sm:text-2xl font-bold text-primary self-center sm:self-auto">Wallify</Link>
-              
+
               <form onSubmit={handleSearchSubmit} className="flex gap-2 items-center w-full sm:w-auto sm:flex-grow max-w-xs sm:max-w-sm md:max-w-md">
                   <div className="relative flex-grow">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
@@ -270,7 +270,7 @@ export default function Home() {
                           type="search"
                           name="search"
                           placeholder="Search..."
-                          className="pl-8 w-full bg-secondary border-border focus:ring-1 focus:ring-ring text-foreground rounded-full h-8 text-sm" 
+                          className="pl-8 w-full bg-secondary border-border focus:ring-1 focus:ring-ring text-foreground rounded-full h-8 text-sm"
                           defaultValue={searchTerm === "Wallpaper" ? "" : searchTerm}
                           aria-label="Search wallpapers"
                       />
@@ -322,23 +322,23 @@ export default function Home() {
                   <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
                       {wallpapers.map((wallpaper) => (
                       <div
-                          key={`${wallpaper.id}-${currentCategory}`} 
+                          key={`${wallpaper.id}-${currentCategory}`}
                           className={`relative ${gridAspectRatio} w-full rounded-lg overflow-hidden cursor-pointer group transition-transform duration-300 ease-in-out hover:scale-105 shadow-md hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background`}
                           onClick={() => openModal(wallpaper)}
                           role="button"
                           aria-label={`View wallpaper: ${wallpaper.alt || `by ${wallpaper.photographer}`}`}
-                          tabIndex={0} 
+                          tabIndex={0}
                           onKeyDown={(e) => e.key === 'Enter' && openModal(wallpaper)}
                       >
                           <Image
-                          src={gridImageSrc(wallpaper)} 
+                          src={gridImageSrc(wallpaper)}
                           alt={wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
                           fill
                           sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                          className={`${gridImageFit} transition-opacity duration-300 group-hover:opacity-80`} 
+                          className={`${gridImageFit} transition-opacity duration-300 group-hover:opacity-80`}
                           placeholder="blur"
                           blurDataURL={wallpaper.src.tiny}
-                          data-ai-hint={`${currentCategory === 'desktop' ? 'desktop background' : 'phone wallpaper'} ${wallpaper.alt ? wallpaper.alt.split(' ').slice(0,2).join(' ') : 'wallpaper'}`} 
+                          data-ai-hint={`${currentCategory === 'desktop' ? 'desktop background' : 'phone wallpaper'} ${wallpaper.alt ? wallpaper.alt.split(' ').slice(0,2).join(' ') : 'wallpaper'}`}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-1.5 sm:p-2 justify-between">
                            <p className="text-white text-[10px] sm:text-xs truncate drop-shadow-sm">{wallpaper.alt || `By ${wallpaper.photographer}`}</p>
@@ -356,7 +356,7 @@ export default function Home() {
                       </div>
                    )}
 
-                   {loading && wallpapers.length > 0 && ( 
+                   {loading && wallpapers.length > 0 && (
                        <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
                           {[...Array(5)].map((_, i) => (
                            <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
@@ -394,12 +394,12 @@ export default function Home() {
 
                        <div className={`relative w-full ${modalAspectRatio} max-h-[70vh] sm:max-h-[75vh] bg-black/50 flex items-center justify-center overflow-hidden`}>
                            <Image
-                              src={selectedWallpaper.src.large2x || selectedWallpaper.src.original} 
+                              src={selectedWallpaper.src.large2x || selectedWallpaper.src.original}
                               alt={selectedWallpaper.alt || `Preview of wallpaper by ${selectedWallpaper.photographer}`}
                               fill
                               sizes="(max-width: 768px) 90vw, 50vw"
-                              className="object-contain" 
-                              priority 
+                              className="object-contain"
+                              priority
                               placeholder="blur"
                               blurDataURL={selectedWallpaper.src.tiny}
                            />
@@ -417,10 +417,21 @@ export default function Home() {
           </Dialog>
 
         <footer className="text-center text-muted-foreground text-xs mt-auto py-3 sm:py-4 border-t border-border bg-background/50">
-           <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-2 px-4">
+           <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-3 px-4">
               <p className="text-center md:text-left">
                   Wallpapers provided by <a href="https://www.pexels.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent focus:outline-none focus:ring-1 focus:ring-accent rounded">Pexels</a>. © 2025 Wallify. All rights reserved.
               </p>
+              <div className="flex items-center gap-x-3 sm:gap-x-4">
+                <a href="https://x.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="text-muted-foreground hover:text-accent transition-colors">
+                  <Twitter className="h-4 w-4" />
+                </a>
+                <a href="https://instagram.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="text-muted-foreground hover:text-accent transition-colors">
+                  <Instagram className="h-4 w-4" />
+                </a>
+                <a href="https://github.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="text-muted-foreground hover:text-accent transition-colors">
+                  <Github className="h-4 w-4" />
+                </a>
+              </div>
               <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
                   <Link href="/about" className="underline hover:text-accent">About</Link>
                   <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>

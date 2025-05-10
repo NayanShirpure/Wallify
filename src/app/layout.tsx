@@ -1,3 +1,4 @@
+
 import type {Metadata} from 'next';
 import { Inter } from 'next/font/google'; // Import Inter font
 import './globals.css';
@@ -30,14 +31,16 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     url: BASE_URL,
     siteName: SITE_NAME,
-    images: [
-      {
-        url: '/src/app/opengraph-image.png', // Path relative to the public folder
-        width: 1200,
-        height: 630,
-        alt: `${SITE_NAME} - ${SITE_DESCRIPTION}`,
-      },
-    ],
+    // Images array removed to allow Next.js to automatically pick up
+    // src/app/opengraph-image.(jpg|png|tsx) if it exists.
+    // images: [
+    //   {
+    //     url: '/opengraph-image.png', // Path relative to the public folder
+    //     width: 1200,
+    //     height: 630,
+    //     alt: `${SITE_NAME} - ${SITE_DESCRIPTION}`,
+    //   },
+    // ],
     locale: 'en_US',
     type: 'website',
   },
@@ -45,7 +48,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: [`${BASE_URL}/src/app/opengraph-image.png`], // Must be an absolute URL
+    // Images array removed to allow Next.js to automatically pick up
+    // src/app/twitter-image.(jpg|png|tsx) or fallback to OpenGraph image.
+    // images: [`${BASE_URL}/opengraph-image.png`], // Must be an absolute URL
     // creator: '@yourtwitterhandle', // Optional: Add Twitter handle
   },
   robots: {

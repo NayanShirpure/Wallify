@@ -12,7 +12,7 @@ const inter = Inter({
   subsets: ['latin'],
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 const SITE_NAME = 'Wallify';
 const SITE_DESCRIPTION = 'Beautiful wallpapers curated for you.';
 
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     images: [
       {
-        url: '/og-image.png', // Path relative to the public folder
+        url: '/src/app/opengraph-image.png', // Path relative to the public folder
         width: 1200,
         height: 630,
         alt: `${SITE_NAME} - ${SITE_DESCRIPTION}`,

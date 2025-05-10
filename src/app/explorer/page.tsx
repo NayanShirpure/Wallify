@@ -1,11 +1,9 @@
-
 'use client';
 
-import type { PexelsPhoto, PexelsResponse, Category as DeviceOrientationCategory } from '@/types/pexels'; // Updated type import
+import type { PexelsPhoto, PexelsResponse, DeviceOrientationCategory } from '@/types/pexels';
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-// import type { Metadata } from 'next'; // Cannot export metadata from client component
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Download, X, Menu, Twitter, Instagram, Github } from 'lucide-react';
@@ -30,9 +28,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories'; // Updated import
+import { wallpaperFilterCategoryGroups, deviceOrientationTabs } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject, WebPage, WithContext } from 'schema-dts';
+import { WallpaperSection } from '@/components/wallpaper-section';
+import { WallpaperOfTheDay } from '@/components/wallpaper-of-the-day';
 
 
 const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
@@ -41,32 +41,86 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.gith
 
 
 export default function ExplorerPage() {
+  // Main grid state
   const [searchTerm, setSearchTerm] = useState('Explore');
-  const [currentCategory, setCurrentCategory] = useState<DeviceOrientationCategory>('smartphone'); // Updated type
+  const [currentCategory, setCurrentCategory] = useState<DeviceOrientationCategory>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  // Modal state
+  const [selectedWallpaper, setSelectedWallpaper] = useState<PexelsPhoto | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const { toast } = useToast();
 
-   const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => { // Updated type
+  // Featured Sections State
+  const [trendingWallpapers, setTrendingWallpapers] = useState<PexelsPhoto[]>([]);
+  const [trendingLoading, setTrendingLoading] = useState(true);
+
+  const [editorsPicks, setEditorsPicks] = useState<PexelsPhoto[]>([]);
+  const [editorsPicksLoading, setEditorsPicksLoading] = useState(true);
+
+  const [mostDownloaded, setMostDownloaded] = useState<PexelsPhoto[]>([]);
+  const [mostDownloadedLoading, setMostDownloadedLoading] = useState(true);
+
+  const [recentlyAdded, setRecentlyAdded] = useState<PexelsPhoto[]>([]);
+  const [recentlyAddedLoading, setRecentlyAddedLoading] = useState(true);
+
+  const [wallpaperOfTheDay, setWallpaperOfTheDay] = useState<PexelsPhoto | null>(null);
+  const [wallpaperOfTheDayLoading, setWallpaperOfTheDayLoading] = useState(true);
+
+
+  const genericFetchWallpapers = useCallback(async (
+    endpoint: string, // e.g., 'search' or 'curated'
+    params: Record<string, string | number>,
+    isSingleItem: boolean = false
+  ): Promise<PexelsPhoto[]> => {
     if (!PEXELS_API_KEY) {
       console.error("Pexels API key is missing.");
-      if (process.env.NODE_ENV === 'development') {
-          toast({
-            title: "API Key Error",
-            description: "Pexels API key is not configured. Please add NEXT_PUBLIC_PEXELS_API_KEY to your environment variables.",
-            variant: "destructive",
-          });
-      } else {
-         toast({
-            title: "Configuration Error",
-            description: "Could not fetch wallpapers due to a configuration issue.",
-            variant: "destructive",
-         });
+      // Toast notifications are handled by individual section loaders
+      return [];
+    }
+
+    const orientation = params.orientation as DeviceOrientationCategory || currentCategory;
+    const queryParams = new URLSearchParams();
+    for (const key in params) {
+      queryParams.append(key, String(params[key]));
+    }
+    
+    const apiUrl = `${PEXELS_API_URL}/${endpoint}?${queryParams.toString()}`;
+
+    try {
+      const response = await fetch(apiUrl, { headers: { Authorization: PEXELS_API_KEY } });
+      if (!response.ok) {
+        if (response.status === 401) throw new Error("Pexels API key invalid");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      const data: PexelsResponse = await response.json();
+      const photos = data.photos || [];
+      return isSingleItem && photos.length > 0 ? [photos[0]] : photos;
+    } catch (error: any) {
+      console.error(`Error fetching from ${endpoint}:`, error.message);
+      if (error.message === "Pexels API key invalid") {
+          if (process.env.NODE_ENV === 'development') {
+            toast({ title: "API Key Invalid", description: "Pexels API key is invalid.", variant: "destructive" });
+          } else {
+            toast({ title: "Auth Error", description: "Could not authenticate for featured content.", variant: "destructive" });
+          }
+      } else {
+        toast({ title: "Fetch Error", description: `Failed to fetch ${endpoint} content.`, variant: "destructive" });
+      }
+      return [];
+    }
+  }, [toast, currentCategory]);
+
+
+  // Fetch function for main grid
+   const fetchWallpapers = useCallback(async (query: string, category: DeviceOrientationCategory, pageNum: number = 1, append: boolean = false) => {
+    if (!PEXELS_API_KEY) {
+      console.error("Pexels API key is missing.");
+      // Toast handled in the main effect or where it's called
       setLoading(false);
       setHasMore(false);
       return;
@@ -77,64 +131,80 @@ export default function ExplorerPage() {
     let finalQuery = query.trim() || 'Explore';
 
     try {
-      const apiUrl = `${PEXELS_API_URL}/search?query=${encodeURIComponent(finalQuery)}&orientation=${orientation}&per_page=30&page=${pageNum}`;
-      const response = await fetch(apiUrl, {
-        headers: {
-          Authorization: PEXELS_API_KEY,
-        },
+      const photos = await genericFetchWallpapers('search', {
+        query: finalQuery,
+        orientation,
+        per_page: 30,
+        page: pageNum,
       });
-
-      if (!response.ok) {
-         if (response.status === 401) {
-            console.error("Pexels API key is invalid or unauthorized.");
-            if (process.env.NODE_ENV === 'development') {
-                 toast({
-                    title: "API Key Invalid",
-                    description: "The configured Pexels API key is invalid or unauthorized.",
-                    variant: "destructive",
-                 });
-             } else {
-                  toast({
-                    title: "Authentication Error",
-                    description: "Could not authenticate with the image provider.",
-                    variant: "destructive",
-                });
-             }
-             setHasMore(false);
-         } else {
-             console.error(`HTTP error! status: ${response.status}, URL: ${apiUrl}`);
-             throw new Error(`HTTP error! status: ${response.status}`);
-         }
-      } else {
-            const data: PexelsResponse = await response.json();
-            const newPhotos = data.photos || [];
-
-            setWallpapers(prev => {
-              const combined = append ? [...prev, ...newPhotos] : newPhotos;
-              const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item]));
-              return Array.from(uniqueMap.values());
-            });
-            setHasMore(!!data.next_page && newPhotos.length > 0);
-      }
-
+      
+      setWallpapers(prev => {
+        const combined = append ? [...prev, ...photos] : photos;
+        const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item]));
+        return Array.from(uniqueMap.values());
+      });
+      setHasMore(photos.length === 30); // Pexels API might not have next_page reliable for last page of results
     } catch (error) {
-      console.error("Error fetching wallpapers:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch wallpapers. Please check your connection and try again.",
-        variant: "destructive",
-      });
-       setHasMore(false);
+      // Error already logged by genericFetchWallpapers, toast specific to main grid context
+      toast({ title: "Error", description: "Failed to fetch main wallpapers.", variant: "destructive" });
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
-   }, [toast]);
+   }, [toast, genericFetchWallpapers]);
 
 
+  // useEffect for main grid
   useEffect(() => {
+    setPage(1); // Reset page when search term or category changes
+    setWallpapers([]); // Clear existing wallpapers
+    setHasMore(true); // Assume there's more initially
     fetchWallpapers(searchTerm, currentCategory, 1, false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, currentCategory]);
+  }, [searchTerm, currentCategory, fetchWallpapers]);
+
+  // useEffect for featured sections
+  useEffect(() => {
+    const loadFeaturedSections = async () => {
+      const orientationParam = currentCategory === 'desktop' ? 'landscape' : 'portrait';
+
+      // Trending
+      setTrendingLoading(true);
+      genericFetchWallpapers('curated', { orientation: orientationParam, per_page: 10 })
+        .then(setTrendingWallpapers)
+        .catch(err => console.error("Trending fetch error:", err))
+        .finally(() => setTrendingLoading(false));
+
+      // Editor's Picks
+      setEditorsPicksLoading(true);
+      genericFetchWallpapers('search', { query: "Creative Art", orientation: orientationParam, per_page: 10 })
+        .then(setEditorsPicks)
+        .catch(err => console.error("Editor's Picks fetch error:", err))
+        .finally(() => setEditorsPicksLoading(false));
+      
+      // Most Downloaded (Simulated)
+      setMostDownloadedLoading(true);
+      genericFetchWallpapers('search', { query: "Popular Backgrounds", orientation: orientationParam, per_page: 10 })
+        .then(setMostDownloaded)
+        .catch(err => console.error("Most Downloaded fetch error:", err))
+        .finally(() => setMostDownloadedLoading(false));
+
+      // Recently Added (Simulated)
+      setRecentlyAddedLoading(true);
+      genericFetchWallpapers('search', { query: "New Digital Art", orientation: orientationParam, per_page: 10 })
+        .then(setRecentlyAdded)
+        .catch(err => console.error("Recently Added fetch error:", err))
+        .finally(() => setRecentlyAddedLoading(false));
+        
+      // Wallpaper of the Day
+      setWallpaperOfTheDayLoading(true);
+      genericFetchWallpapers('search', { query: "Daily Inspiration", orientation: orientationParam, per_page: 1 }, true)
+        .then(photos => setWallpaperOfTheDay(photos.length > 0 ? photos[0] : null))
+        .catch(err => console.error("Wallpaper of the Day fetch error:", err))
+        .finally(() => setWallpaperOfTheDayLoading(false));
+    };
+
+    loadFeaturedSections();
+  }, [currentCategory, genericFetchWallpapers]);
 
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -145,25 +215,19 @@ export default function ExplorerPage() {
     const effectiveSearchTerm = trimmedSearchTerm || 'Explore';
 
     setSearchTerm(effectiveSearchTerm);
-    setPage(1);
-    setWallpapers([]);
-    setHasMore(true);
+    // Page reset and fetch is handled by useEffect for searchTerm
   };
 
-  const handleDeviceCategoryChange = (newCategory: DeviceOrientationCategory) => { // Updated type
+  const handleDeviceCategoryChange = (newCategory: DeviceOrientationCategory) => {
        if (newCategory !== currentCategory) {
            setCurrentCategory(newCategory);
-           setPage(1);
-           setWallpapers([]);
-           setHasMore(true);
+           // Page reset and fetch is handled by useEffect for currentCategory
        }
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
     setSearchTerm(categoryValue);
-    setPage(1);
-    setWallpapers([]);
-    setHasMore(true);
+    // Page reset and fetch is handled by useEffect for searchTerm
   };
 
 
@@ -183,19 +247,19 @@ export default function ExplorerPage() {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setTimeout(() => setSelectedWallpaper(null), 300);
+    setTimeout(() => setSelectedWallpaper(null), 300); // Delay to allow for modal close animation
   };
 
-  const handleDownload = async () => {
-    if (!selectedWallpaper) return;
-    const photographerName = selectedWallpaper.photographer.replace(/[^a-zA-Z0-9_-\s]/g, '').replace(/\s+/g, '_');
-    const filename = `wallify_explore_${photographerName}_${selectedWallpaper.id}.jpg`;
+  const handleDownload = async (wallpaperToDownload: PexelsPhoto | null = selectedWallpaper) => {
+    if (!wallpaperToDownload) return;
+    const photographerName = wallpaperToDownload.photographer.replace(/[^a-zA-Z0-9_-\s]/g, '').replace(/\s+/g, '_');
+    const filename = `wallify_explore_${photographerName}_${wallpaperToDownload.id}.jpg`;
     toast({
         title: "Download Starting",
         description: `Preparing ${filename} for download...`,
       });
     try {
-      await downloadFile(selectedWallpaper.src.original, filename);
+      await downloadFile(wallpaperToDownload.src.original, filename);
       toast({
         title: "Download Complete",
         description: `${filename} has been downloaded.`,
@@ -213,9 +277,10 @@ export default function ExplorerPage() {
    const gridImageSrc = (wallpaper: PexelsPhoto) => {
       if (currentCategory === 'desktop' && wallpaper.src.landscape) return wallpaper.src.landscape;
       if (currentCategory === 'smartphone' && wallpaper.src.portrait) return wallpaper.src.portrait;
+      // Fallbacks
       if (currentCategory === 'desktop') return wallpaper.src.large2x || wallpaper.src.large || wallpaper.src.original;
       if (currentCategory === 'smartphone') return wallpaper.src.large || wallpaper.src.medium || wallpaper.src.original;
-      return wallpaper.src.large;
+      return wallpaper.src.large; // Default fallback
    };
 
    const gridAspectRatio = currentCategory === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
@@ -223,12 +288,12 @@ export default function ExplorerPage() {
 
 
    const modalAspectRatio = selectedWallpaper
-    ? selectedWallpaper.width / selectedWallpaper.height > 1.2
+    ? selectedWallpaper.width / selectedWallpaper.height > 1.2 // More landscape-ish
         ? 'aspect-video'
-        : selectedWallpaper.height / selectedWallpaper.width > 1.2
+        : selectedWallpaper.height / selectedWallpaper.width > 1.2 // More portrait-ish
         ? 'aspect-[9/16]'
-        : 'aspect-square'
-    : gridAspectRatio;
+        : 'aspect-square' // Closer to square
+    : gridAspectRatio; // Default to current grid's aspect ratio if no wallpaper selected
 
   const imageSchema = selectedWallpaper ? {
     '@context': 'https://schema.org',
@@ -237,20 +302,20 @@ export default function ExplorerPage() {
     description: selectedWallpaper.alt || `High-resolution wallpaper by ${selectedWallpaper.photographer}. Dimensions: ${selectedWallpaper.width}x${selectedWallpaper.height}.`,
     contentUrl: selectedWallpaper.src.original,
     thumbnailUrl: selectedWallpaper.src.medium,
-    width: { '@type': 'Distance', value: selectedWallpaper.width.toString(), unitCode: 'E37' },
+    width: { '@type': 'Distance', value: selectedWallpaper.width.toString(), unitCode: 'E37' }, // E37 for pixels
     height: { '@type': 'Distance', value: selectedWallpaper.height.toString(), unitCode: 'E37' },
     author: {
       '@type': 'Person',
       name: selectedWallpaper.photographer,
       url: selectedWallpaper.photographer_url,
     },
-    copyrightHolder: {
+    copyrightHolder: { // Or Organization if Pexels itself
       '@type': 'Person',
       name: selectedWallpaper.photographer,
       url: selectedWallpaper.photographer_url,
     },
     license: 'https://www.pexels.com/license/',
-    acquireLicensePage: selectedWallpaper.url,
+    acquireLicensePage: selectedWallpaper.url, // Link to the Pexels page for the image
     provider: {
       '@type': 'Organization',
       name: 'Pexels',
@@ -264,7 +329,7 @@ export default function ExplorerPage() {
     name: 'Explore Wallpapers - Wallify',
     url: `${BASE_URL}/explorer`,
     description: 'Discover a vast collection of stunning, high-quality wallpapers. Explore different categories and find the perfect background for your desktop or smartphone on Wallify.',
-    keywords: 'explore wallpapers, wallpaper gallery, Pexels wallpapers, discover backgrounds, new wallpapers, wallpaper categories, Wallify explorer',
+    keywords: 'explore wallpapers, wallpaper gallery, Pexels wallpapers, discover backgrounds, new wallpapers, wallpaper categories, Wallify explorer, trending wallpapers, editor picks, daily wallpaper',
   };
 
 
@@ -332,8 +397,61 @@ export default function ExplorerPage() {
         </header>
 
         <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
-          <h1 className="text-2xl font-bold text-primary my-4 sm:my-6 text-center">Explore Wallpapers</h1>
-          {loading && wallpapers.length === 0 ? (
+          <h1 className="text-2xl font-bold text-primary my-4 sm:my-6 text-center sr-only">Explore Wallpapers</h1> {/* Screen reader only as title is in header and sections */}
+
+          {/* Featured Sections */}
+          <WallpaperOfTheDay
+            wallpaper={wallpaperOfTheDay}
+            loading={wallpaperOfTheDayLoading}
+            orientation={currentCategory}
+            onViewClick={openModal}
+            onDownloadClick={(wp) => handleDownload(wp)}
+          />
+
+          <WallpaperSection
+            title="Trending Wallpapers"
+            wallpapers={trendingWallpapers}
+            loading={trendingLoading}
+            orientation={currentCategory}
+            onWallpaperClick={openModal}
+            itemCount={8}
+          />
+
+          <WallpaperSection
+            title="Editor's Picks"
+            wallpapers={editorsPicks}
+            loading={editorsPicksLoading}
+            orientation={currentCategory}
+            onWallpaperClick={openModal}
+            itemCount={8}
+          />
+          
+          <WallpaperSection
+            title="Popular Choices" // "Most Downloaded" (Simulated)
+            wallpapers={mostDownloaded}
+            loading={mostDownloadedLoading}
+            orientation={currentCategory}
+            onWallpaperClick={openModal}
+            itemCount={8}
+          />
+
+          <WallpaperSection
+            title="Fresh Finds" // "Recently Added" (Simulated)
+            wallpapers={recentlyAdded}
+            loading={recentlyAddedLoading}
+            orientation={currentCategory}
+            onWallpaperClick={openModal}
+            itemCount={8}
+          />
+          
+          {/* Main Search Results Section Header */}
+          <h2 className="text-xl sm:text-2xl font-semibold text-primary mt-8 mb-3 sm:mb-4 px-1">
+            {searchTerm === "Explore" ? "Browse All" : `Results for "${searchTerm}"`}
+          </h2>
+
+
+          {/* Main Grid */}
+          {loading && wallpapers.length === 0 ? ( // Initial load for main grid
                <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
                   {[...Array(15)].map((_, i) => (
                    <Skeleton key={`initial-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
@@ -344,7 +462,7 @@ export default function ExplorerPage() {
                   <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
                       {wallpapers.map((wallpaper) => (
                       <div
-                          key={`${wallpaper.id}-${currentCategory}`}
+                          key={`${wallpaper.id}-${currentCategory}-main`} // Ensure unique key
                           className={`relative ${gridAspectRatio} w-full rounded-lg overflow-hidden cursor-pointer group transition-transform duration-300 ease-in-out hover:scale-105 shadow-md hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background`}
                           onClick={() => openModal(wallpaper)}
                           role="button"
@@ -378,7 +496,7 @@ export default function ExplorerPage() {
                       </div>
                    )}
 
-                   {loading && wallpapers.length > 0 && (
+                   {loading && wallpapers.length > 0 && ( // Loading more indicator
                        <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 mt-4`}>
                           {[...Array(5)].map((_, i) => (
                            <Skeleton key={`loading-skeleton-${i}`} className={`${gridAspectRatio} w-full rounded-lg`} />
@@ -428,7 +546,7 @@ export default function ExplorerPage() {
                       </div>
 
                        <DialogFooter className="absolute bottom-0 left-0 right-0 z-30 p-3 sm:p-4 flex justify-end bg-gradient-to-t from-black/50 to-transparent">
-                          <Button onClick={handleDownload} className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md rounded-full px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm">
+                          <Button onClick={() => handleDownload()} className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md rounded-full px-4 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm">
                               <Download className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               Download Original
                           </Button>
@@ -460,7 +578,6 @@ export default function ExplorerPage() {
 
                 <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center sm:justify-end">
                     <Link href="/" className="underline hover:text-accent">Home</Link>
-                    {/* <Link href="/explorer" className="underline hover:text-accent">Explore</Link> Removed as this is explorer page */}
                     <Link href="/about" className="underline hover:text-accent">About</Link>
                     <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>
                     <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>

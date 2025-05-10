@@ -69,6 +69,7 @@ export default function ContactPage() {
               </div>
               <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
                   <Link href="/" className="underline hover:text-accent">Home</Link>
+                  <Link href="/explorer" className="underline hover:text-accent">Explore</Link>
                   <Link href="/about" className="underline hover:text-accent">About</Link>
                   <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>
                   <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
@@ -79,3 +80,5 @@ export default function ContactPage() {
     </>
   );
 }
+
+    

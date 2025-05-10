@@ -5,6 +5,7 @@ import type { PexelsPhoto, PexelsResponse } from '@/types/pexels';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Download, X, Menu, Twitter, Instagram, Github } from 'lucide-react';
@@ -31,7 +32,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { wallpaperCategories, type Category } from '@/config/categories';
 import { StructuredData } from '@/components/structured-data';
-import type { ImageObject, WithContext } from 'schema-dts';
+import type { ImageObject, WebPage, WithContext } from 'schema-dts';
+
+// Metadata for the Explorer page
+// export const metadata: Metadata = { // Cannot export metadata from client component
+//   title: 'Explore Wallpapers - Wallify',
+//   description: 'Discover a vast collection of stunning, high-quality wallpapers. Explore different categories and find the perfect background for your desktop or smartphone on Wallify.',
+//   keywords: ['explore wallpapers', 'wallpaper gallery', 'Pexels wallpapers', 'discover backgrounds', 'new wallpapers', 'wallpaper categories', 'Wallify explorer'],
+// };
 
 
 const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw";
@@ -39,7 +47,7 @@ const PEXELS_API_URL = 'https://api.pexels.com/v1';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 
-export default function Home() {
+export default function ExplorerPage() {
   const [searchTerm, setSearchTerm] = useState('Wallpaper');
   const [currentCategory, setCurrentCategory] = useState<Category>('smartphone');
   const [wallpapers, setWallpapers] = useState<PexelsPhoto[]>([]);
@@ -73,7 +81,7 @@ export default function Home() {
 
     setLoading(true);
     const orientation = category === 'desktop' ? 'landscape' : 'portrait';
-    let finalQuery = query.trim() || 'Wallpaper'; // Default to 'Wallpaper' if query is empty
+    let finalQuery = query.trim() || 'Explore'; // Default to 'Explore' if query is empty for this page
 
     try {
       const apiUrl = `${PEXELS_API_URL}/search?query=${encodeURIComponent(finalQuery)}&orientation=${orientation}&per_page=30&page=${pageNum}`;
@@ -110,7 +118,7 @@ export default function Home() {
 
             setWallpapers(prev => {
               const combined = append ? [...prev, ...newPhotos] : newPhotos;
-              const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item])); // Ensure unique keys per category context
+              const uniqueMap = new Map(combined.map(item => [`${item.id}-${category}`, item]));
               return Array.from(uniqueMap.values());
             });
             setHasMore(!!data.next_page && newPhotos.length > 0);
@@ -141,7 +149,7 @@ export default function Home() {
     const formData = new FormData(event.currentTarget);
     const newSearchTerm = formData.get('search') as string;
     const trimmedSearchTerm = newSearchTerm.trim();
-    const effectiveSearchTerm = trimmedSearchTerm || 'Wallpaper';
+    const effectiveSearchTerm = trimmedSearchTerm || 'Explore';
 
     setSearchTerm(effectiveSearchTerm);
     setPage(1);
@@ -188,7 +196,7 @@ export default function Home() {
   const handleDownload = async () => {
     if (!selectedWallpaper) return;
     const photographerName = selectedWallpaper.photographer.replace(/[^a-zA-Z0-9_-\s]/g, '').replace(/\s+/g, '_');
-    const filename = `wallify_${photographerName}_${selectedWallpaper.id}.jpg`;
+    const filename = `wallify_explore_${photographerName}_${selectedWallpaper.id}.jpg`;
     toast({
         title: "Download Starting",
         description: `Preparing ${filename} for download...`,
@@ -257,9 +265,19 @@ export default function Home() {
     },
   } as WithContext<ImageObject> : null;
 
+  const explorerPageSchema: WithContext<WebPage> = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: 'Explore Wallpapers - Wallify',
+    url: `${BASE_URL}/explorer`,
+    description: 'Discover a vast collection of stunning, high-quality wallpapers. Explore different categories and find the perfect background for your desktop or smartphone on Wallify.',
+    keywords: 'explore wallpapers, wallpaper gallery, Pexels wallpapers, discover backgrounds, new wallpapers, wallpaper categories, Wallify explorer',
+  };
+
 
   return (
     <>
+      <StructuredData data={explorerPageSchema} />
       {imageSchema && <StructuredData data={imageSchema} />}
       <div className="flex flex-col min-h-screen bg-background text-foreground">
         <header className="sticky top-0 z-20 bg-background/90 backdrop-blur-sm border-b border-border">
@@ -272,10 +290,10 @@ export default function Home() {
                       <Input
                           type="search"
                           name="search"
-                          placeholder="Search..."
+                          placeholder="Explore wallpapers..."
                           className="pl-8 w-full bg-secondary border-border focus:ring-1 focus:ring-ring text-foreground rounded-full h-8 text-sm"
-                          defaultValue={searchTerm === "Wallpaper" ? "" : searchTerm}
-                          aria-label="Search wallpapers"
+                          defaultValue={searchTerm === "Explore" ? "" : searchTerm}
+                          aria-label="Search wallpapers to explore"
                       />
                   </div>
                   <Button type="submit" variant="default" size="icon" className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full h-8 w-8 text-sm shrink-0">
@@ -296,7 +314,7 @@ export default function Home() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon" className="h-8 w-8">
                       <Menu className="h-4 w-4" />
-                      <span className="sr-only">Categories Menu</span>
+                      <span className="sr-only">Wallpaper Categories Menu</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 max-h-80 overflow-y-auto">
@@ -314,6 +332,7 @@ export default function Home() {
         </header>
 
         <main className="flex-grow container mx-auto max-w-7xl p-4 md:p-6">
+          <h1 className="text-2xl font-bold text-primary my-4 sm:my-6 text-center">Explore Wallpapers</h1>
           {loading && wallpapers.length === 0 ? (
                <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4`}>
                   {[...Array(15)].map((_, i) => (
@@ -440,6 +459,7 @@ export default function Home() {
                 </div>
 
                 <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center sm:justify-end">
+                    <Link href="/" className="underline hover:text-accent">Home</Link>
                     <Link href="/explorer" className="underline hover:text-accent">Explore</Link>
                     <Link href="/about" className="underline hover:text-accent">About</Link>
                     <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>
@@ -453,7 +473,5 @@ export default function Home() {
     </>
   );
 }
-
-    
 
     

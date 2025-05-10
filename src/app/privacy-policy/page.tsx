@@ -17,7 +17,7 @@ export default function PrivacyPolicyPage() {
   const today = new Date().toISOString().split('T')[0];
   const webPageSchema: WithContext<WebPage> = {
     '@context': 'https://schema.org',
-    '@type': 'WebPage', // Could also use 'PrivacyPolicyPage' if more specific schema elements are needed
+    '@type': 'WebPage', 
     name: 'Privacy Policy for Wallify Wallpaper Application',
     url: `${BASE_URL}/privacy-policy`,
     description: 'Official Privacy Policy for the Wallify application, detailing data handling practices.',
@@ -25,7 +25,7 @@ export default function PrivacyPolicyPage() {
       '@type': 'WebPage',
       '@id': `${BASE_URL}/privacy-policy`,
     },
-    datePublished: "2024-01-01", // Set a fixed publish date or use site build time
+    datePublished: "2024-01-01", 
     dateModified: today,
   };
 
@@ -133,6 +133,7 @@ export default function PrivacyPolicyPage() {
               </div>
               <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
                   <Link href="/" className="underline hover:text-accent">Home</Link>
+                  <Link href="/explorer" className="underline hover:text-accent">Explore</Link>
                   <Link href="/about" className="underline hover:text-accent">About</Link>
                   <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
                   <Link href="/contact" className="underline hover:text-accent">Contact</Link>
@@ -143,3 +144,5 @@ export default function PrivacyPolicyPage() {
     </>
   );
 }
+
+    

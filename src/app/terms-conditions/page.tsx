@@ -17,7 +17,7 @@ export default function TermsConditionsPage() {
   const today = new Date().toISOString().split('T')[0];
   const webPageSchema: WithContext<WebPage> = {
     '@context': 'https://schema.org',
-    '@type': 'WebPage', // Could use 'TermsOfServicePage' if more specific schema properties are used
+    '@type': 'WebPage', 
     name: 'Terms and Conditions for Wallify Application',
     url: `${BASE_URL}/terms-conditions`,
     description: 'Official Terms and Conditions governing the use of the Wallify wallpaper application.',
@@ -25,7 +25,7 @@ export default function TermsConditionsPage() {
       '@type': 'WebPage',
       '@id': `${BASE_URL}/terms-conditions`,
     },
-    datePublished: "2024-01-01", // Set a fixed publish date or use site build time
+    datePublished: "2024-01-01", 
     dateModified: today,
   };
 
@@ -167,6 +167,7 @@ export default function TermsConditionsPage() {
               </div>
               <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
                   <Link href="/" className="underline hover:text-accent">Home</Link>
+                  <Link href="/explorer" className="underline hover:text-accent">Explore</Link>
                   <Link href="/about" className="underline hover:text-accent">About</Link>
                   <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>
                   <Link href="/contact" className="underline hover:text-accent">Contact</Link>
@@ -177,3 +178,5 @@ export default function TermsConditionsPage() {
     </>
   );
 }
+
+    

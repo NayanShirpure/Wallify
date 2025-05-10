@@ -21,14 +21,14 @@ export default function AboutUsPage() {
     '@type': 'Organization',
     name: 'Wallify',
     url: BASE_URL,
-    logo: `${BASE_URL}/icon.png`, // Assuming you have an icon.png in public
+    logo: `${BASE_URL}/icon.png`, 
     description: 'Wallify is your ultimate destination for stunning, high-quality wallpapers for all your devices, sourced from Pexels.',
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'Customer Support',
       url: `${BASE_URL}/contact`,
     },
-    sameAs: [ // Added social links for organization schema
+    sameAs: [ 
         "https://x.com/NayanShirpure",
         "https://instagram.com/NayanShirpure",
         "https://github.com/NayanShirpure/Wallify"
@@ -177,6 +177,7 @@ export default function AboutUsPage() {
               </div>
               <nav className="flex gap-x-3 sm:gap-x-4 gap-y-1 flex-wrap justify-center md:justify-end">
                   <Link href="/" className="underline hover:text-accent">Home</Link>
+                  <Link href="/explorer" className="underline hover:text-accent">Explore</Link>
                   <Link href="/privacy-policy" className="underline hover:text-accent">Privacy</Link>
                   <Link href="/terms-conditions" className="underline hover:text-accent">Terms</Link>
                   <Link href="/contact" className="underline hover:text-accent">Contact</Link>
@@ -187,3 +188,5 @@ export default function AboutUsPage() {
     </>
   );
 }
+
+    

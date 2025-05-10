@@ -4,18 +4,18 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { ContactForm } from '@/components/contact-form'; 
 import { StructuredData } from '@/components/structured-data';
-import type { ContactPage as SchemaContactPage, WithContext } from 'schema-dts'; // Renamed to avoid conflict and added WithContext
+import type { ContactPage as SchemaContactPage, WithContext } from 'schema-dts';
 
 export const metadata: Metadata = {
   title: 'Contact Us - Wallify',
   description: 'Contact Wallify support',
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export default function ContactPage() {
-  const contactPageSchema: WithContext<SchemaContactPage> = { // Correctly typed and defined
-    '@context': 'https://schema.org', // Added @context
+  const contactPageSchema: WithContext<SchemaContactPage> = { 
+    '@context': 'https://schema.org', 
     '@type': 'ContactPage',
     name: 'Contact Wallify',
     url: `${BASE_URL}/contact`,

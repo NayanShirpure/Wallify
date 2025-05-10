@@ -5,22 +5,22 @@ import { ArrowLeft, Info, Users, Target } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { StructuredData } from '@/components/structured-data';
-import type { Organization, WithContext } from 'schema-dts'; // Added WithContext
+import type { Organization, WithContext } from 'schema-dts';
 
 export const metadata: Metadata = {
   title: 'About Us - Wallify',
   description: 'Learn more about Wallify and our mission.',
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export default function AboutUsPage() {
   const orgData: WithContext<Organization> = {
-    '@context': 'https://schema.org', // Added @context
+    '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Wallify',
     url: BASE_URL,
-    logo: `${BASE_URL}/icon.png`, // Updated to a relative path, ensure icon.png exists in public
+    logo: `${BASE_URL}/icon.png`,
     description: 'Wallify is your ultimate destination for stunning, high-quality wallpapers for all your devices.',
     contactPoint: {
       '@type': 'ContactPoint',

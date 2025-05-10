@@ -32,11 +32,11 @@ import {
 import { wallpaperCategories, type Category } from '@/config/categories'; 
 import { StructuredData } from '@/components/structured-data';
 import type { ImageObject, WithContext } from 'schema-dts';
-// Removed useRouter from 'next/navigation' as we are not navigating to a separate search page
+
 
 const PEXELS_API_KEY = process.env.NEXT_PUBLIC_PEXELS_API_KEY || "lc7gpWWi2bcrekjM32zdi1s68YDYmEWMeudlsDNNMVEicIIke3G8Iamw"; 
 const PEXELS_API_URL = 'https://api.pexels.com/v1';
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 
 export default function Home() {
@@ -146,7 +146,6 @@ export default function Home() {
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
-    // No navigation, useEffect will handle the fetch
   };
 
   const handleDeviceCategoryChange = (newCategory: Category) => {
@@ -155,12 +154,11 @@ export default function Home() {
            setPage(1);
            setWallpapers([]);
            setHasMore(true);
-           // useEffect will handle fetch
        }
    };
 
    const handleWallpaperCategorySelect = (categoryValue: string) => {
-    setSearchTerm(categoryValue); // This will trigger the useEffect to fetch wallpapers
+    setSearchTerm(categoryValue); 
     setPage(1);
     setWallpapers([]);
     setHasMore(true);
@@ -435,4 +433,3 @@ export default function Home() {
     </>
   );
 }
-

@@ -12,14 +12,60 @@ const inter = Inter({
   subsets: ['latin'],
 });
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
+const SITE_NAME = 'Wallify';
+const SITE_DESCRIPTION = 'Beautiful wallpapers curated for you.';
+
 export const metadata: Metadata = {
-  title: 'Wallify',
-  description: 'Beautiful wallpapers curated for you.',
-  manifest: '/manifest.json', 
-  themeColor: '#1F2937', 
+  metadataBase: new URL(BASE_URL), // Recommended for resolving openGraph.images relative paths
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  manifest: '/manifest.json',
+  themeColor: '#1F2937', // Dark Gray, matches dark theme background
+  openGraph: {
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    url: BASE_URL,
+    siteName: SITE_NAME,
+    images: [
+      {
+        url: '/og-image.png', // Path relative to the public folder
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} - ${SITE_DESCRIPTION}`,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: [`${BASE_URL}/og-image.png`], // Must be an absolute URL
+    // creator: '@yourtwitterhandle', // Optional: Add Twitter handle
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  // icons: { // Add icons if you have them in public folder
+  //   icon: '/favicon.ico',
+  //   shortcut: '/favicon-16x16.png',
+  //   apple: '/apple-touch-icon.png',
+  // },
 };
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://wallify.example.com';
 
 export default function RootLayout({
   children,
@@ -29,18 +75,9 @@ export default function RootLayout({
   const webSiteSchema: WithContext<WebSite> = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Wallify',
+    name: SITE_NAME,
     url: BASE_URL,
-    description: 'Beautiful wallpapers curated for you.',
-    // Removed potentialAction as search page is deleted
-    // potentialAction: {
-    //   '@type': 'SearchAction',
-    //   target: {
-    //     '@type': 'EntryPoint',
-    //     urlTemplate: `${BASE_URL}/search/{search_term_string}`,
-    //   },
-    //   ...({ "query-input": "required name=search_term_string" } as any)
-    // },
+    description: SITE_DESCRIPTION,
   };
 
   return (
@@ -49,8 +86,8 @@ export default function RootLayout({
          <StructuredData data={webSiteSchema} />
       </head>
       <body className={cn(
-        inter.variable, 
-        'antialiased dark' 
+        inter.variable,
+        'antialiased dark'
        )}>
         {children}
         <Toaster />
@@ -58,4 +95,3 @@ export default function RootLayout({
     </html>
   );
 }
-

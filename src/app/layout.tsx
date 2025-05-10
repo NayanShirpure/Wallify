@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: [`${BASE_URL}/og-image.png`], // Must be an absolute URL
+    images: [`${BASE_URL}/src/app/opengraph-image.png`], // Must be an absolute URL
     // creator: '@yourtwitterhandle', // Optional: Add Twitter handle
   },
   robots: {

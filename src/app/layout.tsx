@@ -103,8 +103,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="google-site-verification" content="apm8EU8qRvhCz7XYwbXyTM3JQAu4whs85UL0HaZCnDc" />
          <StructuredData data={webSiteSchema} />
-         <meta name="google-site-verification" content="apm8EU8qRvhCz7XYwbXyTM3JQAu4whs85UL0HaZCnDc" />
       </head>
       <body className={cn(
         inter.variable,

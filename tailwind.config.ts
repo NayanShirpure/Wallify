@@ -1,13 +1,24 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
     darkMode: ["class"],
     content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    // General glob for all components
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    // General glob for all app router files
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    screens: {
+      xxs: "380px", // Custom extra extra small breakpoint
+      xs: "480px",  // Custom extra small breakpoint
+      sm: "640px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1536px",
+    },
   	extend: {
   		colors: {
   			background: 'hsl(var(--background))',

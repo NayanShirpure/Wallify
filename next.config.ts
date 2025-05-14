@@ -1,14 +1,7 @@
-
 import type {NextConfig} from 'next';
 
-const IS_GITHUB_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
-const REPO_NAME = 'Wallify'; // Your repository name
-
 const nextConfig: NextConfig = {
-  output: 'export', // Ensure static export is configured
-  basePath: IS_GITHUB_ACTIONS ? `/${REPO_NAME}` : undefined, // Set basePath for GitHub Pages
-  assetPrefix: IS_GITHUB_ACTIONS ? `/${REPO_NAME}/` : undefined, // Set assetPrefix for GitHub Pages
-
+  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -16,7 +9,6 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: true, // Crucial for `output: 'export'` and static hosts like GitHub Pages
     remotePatterns: [
       {
         protocol: 'https',
@@ -24,20 +16,19 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      { // Add Pexels image domain
+      {
         protocol: 'https',
         hostname: 'images.pexels.com',
         port: '',
         pathname: '/**',
-      },
-       { // Add Pexels video domain (might be needed if API returns video previews)
-        protocol: 'https',
-        hostname: 'videos.pexels.com',
-        port: '',
-        pathname: '/**',
-      },
+      }
     ],
   },
+  env: {
+    // This makes PEXELS_API_KEY available to the client-side code as process.env.NEXT_PUBLIC_PEXELS_API_KEY
+    // The server-side code can still access it as process.env.PEXELS_API_KEY
+    NEXT_PUBLIC_PEXELS_API_KEY: process.env.PEXELS_API_KEY,
+  }
 };
 
 export default nextConfig;

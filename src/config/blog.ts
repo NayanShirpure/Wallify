@@ -24,7 +24,7 @@ export const blogPosts: BlogPostMeta[] = [
     tags: ['trends', '2025', 'design', 'minimalist', 'maximalist', 'nature', 'abstract'],
     keywords: ['wallpaper trends 2025', 'digital decor', 'desktop backgrounds 2025', 'smartphone wallpapers 2025', 'design predictions', 'popular wallpaper styles'],
     contentComponent: () => import('@/components/blog/articles/wallpaper-trends-2025'),
-    opengraphImage: '/blog/og-wallpaper-trends.png',
+    opengraphImage: '/blog/og-wallpaper-trends-2025.png', // Cover image added
   },
   {
     slug: 'best-wallpapers-smartphones',
@@ -35,7 +35,7 @@ export const blogPosts: BlogPostMeta[] = [
     tags: ['smartphones', 'mobile', 'iphone', 'android', 'optimized'],
     keywords: ['best smartphone wallpapers', 'iPhone wallpapers', 'Android backgrounds', 'mobile wallpapers', 'optimized for phone', 'high-resolution mobile'],
     contentComponent: () => import('@/components/blog/articles/best-wallpapers-smartphones'),
-    opengraphImage: '/blog/og-best-phone-wallpapers.png',
+    opengraphImage: '/blog/og-best-smartphones-wallpapers.png', // Cover image added
   },
   {
     slug: 'wallpapers-for-gamers',
@@ -46,7 +46,7 @@ export const blogPosts: BlogPostMeta[] = [
     tags: ['gaming', 'gamers', 'desktop', 'fantasy', 'sci-fi'],
     keywords: ['gaming wallpapers', 'wallpapers for gamers', 'desktop gaming backgrounds', 'epic game art', 'video game wallpapers', 'esports wallpapers'],
     contentComponent: () => import('@/components/blog/articles/wallpapers-for-gamers'),
-    opengraphImage: '/blog/og-gaming-wallpapers.png',
+    opengraphImage: '/blog/og-gaming-wallpapers-collection.png', // Cover image added
   },
   {
     slug: 'choosing-perfect-wallpaper',
@@ -57,7 +57,7 @@ export const blogPosts: BlogPostMeta[] = [
     tags: ['guide', 'how-to', 'aesthetic', 'personalization', 'style'],
     keywords: ['choose wallpaper', 'perfect wallpaper guide', 'wallpaper aesthetic', 'style matching wallpaper', 'color psychology wallpaper', 'desktop personalization'],
     contentComponent: () => import('@/components/blog/articles/choosing-perfect-wallpaper'),
-    opengraphImage: '/blog/og-choosing-wallpaper.png',
+    opengraphImage: '/blog/og-choosing-perfect-wallpaper-guide.png', // Cover image added
   },
   {
     slug: 'wallpaper-color-psychology',
@@ -68,6 +68,6 @@ export const blogPosts: BlogPostMeta[] = [
     tags: ['color psychology', 'mood', 'well-being', 'design', 'productivity'],
     keywords: ['wallpaper color psychology', 'mood enhancing wallpapers', 'color palettes for desktop', 'calming wallpapers', 'energetic wallpapers', 'wallpaper and emotion'],
     contentComponent: () => import('@/components/blog/articles/wallpaper-color-psychology'),
-    opengraphImage: '/blog/og-wallpaper-colors.png',
+    opengraphImage: '/blog/og-wallpaper-color-mood.png', // Cover image added
   }
 ];

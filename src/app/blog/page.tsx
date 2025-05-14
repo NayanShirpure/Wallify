@@ -1,37 +1,48 @@
 
 import Link from 'next/link';
 import { blogPosts } from '@/config/blog';
-import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card'; // Removed CardTitle
+import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card'; 
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { CalendarDays, UserCircle } from 'lucide-react';
 import { StructuredData } from '@/components/structured-data';
-import type { Blog, WithContext } from 'schema-dts';
+// Updated import for local minimal types
+import type { Blog as SchemaBlog, BlogPosting, Person, ImageObject as SchemaImageObject, MinimalWithContext } from '@/types/schema-dts';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
 export default function BlogIndexPage() {
   const sortedBlogPosts = [...blogPosts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const blogSchema: WithContext<Blog> = {
+  // Correctly typed with MinimalWithContext<SchemaBlog>
+  const blogSchema: MinimalWithContext<SchemaBlog> = {
     '@context': 'https://schema.org',
     '@type': 'Blog',
     name: 'Wallify Blog',
     description: 'Insights, trends, and guides on digital wallpapers from Wallify.',
     url: `${BASE_URL}blog`,
-    blogPost: sortedBlogPosts.map(post => ({
-      '@type': 'BlogPosting',
-      headline: post.title,
-      url: `${BASE_URL}blog/${post.slug}`,
-      datePublished: post.date,
-      author: {
-        '@type': 'Person',
-        name: post.author || 'Wallify Team',
-      },
-      image: post.opengraphImage ? `${BASE_URL}${post.opengraphImage.startsWith('/') ? post.opengraphImage.substring(1) : post.opengraphImage}` : `${BASE_URL}blog/og-blog-main.png`,
-      description: post.summary,
-      keywords: post.keywords?.join(', ') || post.tags?.join(', '),
-    })),
+    blogPost: sortedBlogPosts.map(post => {
+      const allTagsAndKeywords = [
+        ...(post.keywords || []),
+        ...(post.tags || [])
+      ];
+      const uniqueKeywords = Array.from(new Set(allTagsAndKeywords));
+      const keywordsString = uniqueKeywords.length > 0 ? uniqueKeywords.join(', ') : undefined;
+
+      return {
+        '@type': 'BlogPosting',
+        headline: post.title,
+        url: `${BASE_URL}blog/${post.slug}`,
+        datePublished: post.date,
+        author: {
+          '@type': 'Person',
+          name: post.author || 'Wallify Team',
+        } as Person,
+        image: post.opengraphImage ? `${BASE_URL}${post.opengraphImage.startsWith('/') ? post.opengraphImage.substring(1) : post.opengraphImage}` : `${BASE_URL}blog/og-blog-main.png`,
+        description: post.summary,
+        keywords: keywordsString,
+      } as BlogPosting; // Cast inner items to BlogPosting
+    }),
   };
 
 
@@ -96,5 +107,3 @@ export default function BlogIndexPage() {
     </>
   );
 }
-
-    

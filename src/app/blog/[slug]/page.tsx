@@ -1,9 +1,18 @@
+
 import { blogPosts } from '@/config/blog';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, UserCircle } from 'lucide-react';
 import { StructuredData } from '@/components/structured-data';
-import type { BlogPosting, WithContext } from 'schema-dts';
+// Updated import for local minimal types
+import type { 
+  BlogPosting, 
+  Person, 
+  Organization, 
+  ImageObject as SchemaImageObject, // Renamed to avoid conflict
+  WebPage as SchemaWebPage, // Renamed to avoid conflict
+  MinimalWithContext 
+} from '@/types/schema-dts';
 import Image from 'next/image';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -12,7 +21,10 @@ export async function generateStaticParams() {
   return blogPosts.map((post) => ({ slug: post.slug }));
 }
 
-// ✅ Now handles Promise-based `params`
+interface BlogPostPageProps {
+  params: { slug: string };
+}
+
 export default async function BlogPostPage({
   params,
 }: {
@@ -25,7 +37,15 @@ export default async function BlogPostPage({
 
   const PostContent = (await post.contentComponent()).default;
 
-  const articleSchema: WithContext<BlogPosting> = {
+  const allTagsAndKeywords = [
+    ...(post.keywords || []),
+    ...(post.tags || [])
+  ];
+  const uniqueKeywords = Array.from(new Set(allTagsAndKeywords));
+  const keywordsString = uniqueKeywords.length > 0 ? uniqueKeywords.join(', ') : undefined;
+
+  // Correctly typed with MinimalWithContext<BlogPosting>
+  const articleSchema: MinimalWithContext<BlogPosting> = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: post.title,
@@ -38,20 +58,20 @@ export default async function BlogPostPage({
     author: {
       '@type': 'Person',
       name: post.author || 'Wallify Team',
-    },
+    } as Person, // Cast to ensure it matches the defined Person type
     publisher: {
       '@type': 'Organization',
       name: 'Wallify',
       logo: {
         '@type': 'ImageObject',
         url: `${BASE_URL}opengraph-image.png`,
-      },
-    },
+      } as SchemaImageObject, // Cast to ensure it matches the defined ImageObject type
+    } as Organization, // Cast to ensure it matches the defined Organization type
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `${BASE_URL}blog/${post.slug}`,
-    },
-    keywords: post.keywords?.join(', ') || post.tags?.join(', '),
+    } as SchemaWebPage, // Cast to ensure it matches the defined WebPage type
+    keywords: keywordsString,
   };
 
   return (
@@ -96,6 +116,7 @@ export default async function BlogPostPage({
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 768px, 1000px"
               className="object-cover"
               priority
+              data-ai-hint="blog cover"
             />
           </div>
         )}

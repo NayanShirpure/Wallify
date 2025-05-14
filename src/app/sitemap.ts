@@ -1,6 +1,6 @@
 
 import type { MetadataRoute } from 'next';
-import { blogPosts } from '@/config/blog'; // Import blog posts
+import { blogPosts } from '@/config/blog';
 export const dynamic = 'force-static'
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
@@ -8,8 +8,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.gith
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages = [
     { url: '/', changeFrequency: 'daily', priority: 1.0 },
-    { url: '/explorer', changeFrequency: 'weekly', priority: 0.8 },
-    { url: '/blog', changeFrequency: 'weekly', priority: 0.9 }, // Blog index
+    { url: '/discover', changeFrequency: 'weekly', priority: 0.8 },
+    { url: '/blog', changeFrequency: 'weekly', priority: 0.9 },
+    // Add the static search page
+    { url: '/search', changeFrequency: 'weekly', priority: 0.7 },
     { url: '/about', changeFrequency: 'monthly', priority: 0.7 },
     { url: '/contact', changeFrequency: 'monthly', priority: 0.5 },
     { url: '/privacy-policy', changeFrequency: 'yearly', priority: 0.3 },
@@ -23,11 +25,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const blogPostPages = blogPosts.map(post => ({
     url: `${BASE_URL}blog/${post.slug}`,
-    lastModified: new Date(post.date).toISOString(), // Use post date for lastModified
+    lastModified: new Date(post.date).toISOString(),
     changeFrequency: 'monthly' as MetadataRoute.Sitemap[0]['changeFrequency'],
     priority: 0.7,
   }));
-
 
   return [...staticPages, ...blogPostPages]; 
 }

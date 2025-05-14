@@ -1,15 +1,19 @@
+
 'use client';
 
 import type { PexelsPhoto, DeviceOrientationCategory } from '@/types/pexels';
 import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Download } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { WallpaperCard } from './wallpaper/WallpaperCard'; // Import WallpaperCard for consistent item rendering
 
 interface WallpaperSectionProps {
   title: string;
   wallpapers: PexelsPhoto[];
   loading: boolean;
-  orientation: DeviceOrientationCategory;
+  orientation: DeviceOrientationCategory; // This orientation is for the *type* of content (desktop/phone)
   onWallpaperClick: (wallpaper: PexelsPhoto) => void;
   itemCount?: number;
 }
@@ -18,64 +22,49 @@ export function WallpaperSection({
   title,
   wallpapers,
   loading,
-  orientation,
+  orientation, // This is the general orientation context for the content type
   onWallpaperClick,
-  itemCount = 8, // Default to 8 items for sections
+  itemCount = 10, 
 }: WallpaperSectionProps) {
-  const aspectRatio = orientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]';
-  // Adjusted widths for a responsive horizontal scroll, Tailwind classes define max-width basically
-  const imageContainerClass = orientation === 'desktop' 
-    ? 'w-60 md:w-72 lg:w-80' // Wider for desktop landscape
-    : 'w-32 md:w-36 lg:w-40'; // Narrower for mobile portrait
-
+  // For carousel display, items can maintain their natural orientation (derived from API)
+  // or be forced. WallpaperCard itself handles aspect ratio based on its `orientation` prop.
+  // Here, `orientation` prop of WallpaperSection dictates what kind of data we *expect*
+  // and what orientation WallpaperCard *should* use.
+  
   const displayedWallpapers = wallpapers.slice(0, itemCount);
 
-  const getSrc = (photo: PexelsPhoto) => {
-    // Prioritize orientation-specific crops, then fall back
-    if (orientation === 'desktop') {
-      return photo.src.landscape || photo.src.large || photo.src.original;
-    }
-    // Smartphone (portrait)
-    return photo.src.portrait || photo.src.medium || photo.src.original;
-  };
+  // Skeleton item width should match card width in carousel
+  // These widths are approximate and aim for a good carousel look.
+  const skeletonItemWidth = orientation === 'desktop' 
+    ? 'w-60 xs:w-64 sm:w-72 md:w-80 lg:w-[340px]' // Wider for desktop context items
+    : 'w-32 xs:w-36 sm:w-40 md:w-44 lg:w-48'; // Narrower for phone context items
 
   return (
-    <section className="mb-6 sm:mb-10">
-      <h2 className="text-xl sm:text-2xl font-semibold text-primary mb-3 sm:mb-4 px-1">{title}</h2>
+    <section className="py-2">
+      <h2 className="text-2xl sm:text-3xl font-bold text-primary mb-4 sm:mb-6 px-1">{title}</h2>
       {loading ? (
-        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 px-1">
-          {[...Array(Math.min(itemCount, 4))].map((_, i) => ( // Show a few skeletons
-            <div key={`skeleton-${title}-${i}`} className={`flex-shrink-0 ${imageContainerClass}`}>
-              <Skeleton className={`${aspectRatio} w-full rounded-lg`} />
+        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1">
+          {[...Array(Math.min(itemCount, 5))].map((_, i) => ( // Show up to 5 skeletons for sections
+            <div key={`skeleton-${title}-${i}`} className={cn("flex-shrink-0", skeletonItemWidth)}>
+              <Skeleton className={cn(
+                "w-full rounded-md md:rounded-lg shadow-sm",
+                orientation === 'desktop' ? 'aspect-video' : 'aspect-[9/16]' // Skeleton matches the expected item orientation
+                )} />
             </div>
           ))}
         </div>
       ) : wallpapers.length > 0 ? (
-        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-3 px-1"> {/* Added pb-3 for scrollbar space */}
+        <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 pt-1 px-1 -mx-1">
           {displayedWallpapers.map((wallpaper) => (
-            <div
-              key={`${wallpaper.id}-${orientation}-${title}`}
-              className={`relative ${imageContainerClass} ${aspectRatio} flex-shrink-0 rounded-lg overflow-hidden cursor-pointer group shadow-md hover:shadow-lg focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background transition-transform duration-200 ease-in-out hover:scale-102`}
-              onClick={() => onWallpaperClick(wallpaper)}
-              role="button"
-              aria-label={`View wallpaper: ${wallpaper.alt || `by ${wallpaper.photographer}`}`}
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && onWallpaperClick(wallpaper)}
+            <div 
+              key={`${wallpaper.id}-${orientation}-${title}`} 
+              className={cn("flex-shrink-0", skeletonItemWidth)} 
             >
-              <Image
-                src={getSrc(wallpaper)}
-                alt={wallpaper.alt || `Wallpaper by ${wallpaper.photographer}`}
-                fill
-                sizes={`(max-width: 768px) 40vw, ${imageContainerClass.split(' ').find(c => c.startsWith('lg:w-'))?.replace('lg:w-','') || '200'}px`} // Approximate sizes
-                className="object-cover transition-opacity duration-300 group-hover:opacity-80"
-                placeholder="blur"
-                blurDataURL={wallpaper.src.tiny}
-                data-ai-hint={`${orientation === 'desktop' ? 'desktop background' : 'phone wallpaper'} ${wallpaper.alt ? wallpaper.alt.split(' ').slice(0,2).join(' ') : 'wallpaper'}`}
+              <WallpaperCard
+                photo={wallpaper}
+                onClick={() => onWallpaperClick(wallpaper)}
+                orientation={orientation} // Pass the section's orientation to the card
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-1.5 sm:p-2 justify-between">
-                <p className="text-white text-[10px] sm:text-xs truncate drop-shadow-sm">{wallpaper.alt || `By ${wallpaper.photographer}`}</p>
-                <Download size={12} sm-size={14} className="text-white/70 shrink-0 ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
             </div>
           ))}
         </div>
@@ -85,3 +74,4 @@ export function WallpaperSection({
     </section>
   );
 }
+

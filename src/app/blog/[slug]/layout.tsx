@@ -1,10 +1,13 @@
 // src/app/blog/[slug]/layout.tsx
 
 import type { Metadata, ResolvingMetadata } from 'next';
+import type { ReactNode } from 'react'; // Explicitly import ReactNode
 import { blogPosts } from '@/config/blog';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://nayanshirpure.github.io/Wallify/';
 
+// Async metadata generator
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string }> },
   parent: ResolvingMetadata
@@ -16,13 +19,19 @@ export async function generateMetadata(
     return {
       title: 'Post Not Found | Wallify',
       description: 'The blog post you are looking for does not exist.',
+      alternates: {
+        canonical: `${BASE_URL}blog/${slug}`,
+      },
     };
   }
 
-  const previousImages = (await parent).openGraph?.images || [];
+  // Resolve parent metadata once
+  const parentOpenGraph = await parent;
+  const previousImages = parentOpenGraph?.openGraph?.images || [];
+
   const ogImage = post.opengraphImage
     ? `${BASE_URL}${post.opengraphImage.replace(/^\//, '')}`
-    : `${BASE_URL}blog/og-blog-main.png`;
+    : `${BASE_URL}blog/og-blog-main.png`; // Default OG image
 
   return {
     title: post.title,
@@ -58,7 +67,7 @@ export async function generateMetadata(
   };
 }
 
-// Layout component must be synchronous
+// Synchronous layout component with typed props
 export default function BlogPostLayout({
   children,
 }: {

@@ -1,50 +1,46 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
-# testing
+# Testing
 /coverage
 
-# next.js
+# Next.js
 /.next/
 /out/
 
-# production
+# Production
 /build
 
-# misc
+# Misc
 .DS_Store
 *.pem
 
-# debug
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+# Local ESlint Language Server settings
+.eslintcache
 
-# local env files
-.env*.local
+# Editor directories and files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
 
-# vercel
-.vercel
+# Local Environment Variables
+.env.local
+.env.*.local
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Turborepo
+.turbo
 
-# ui state file
-# Commented out as this might be useful for some projects
-# .node_repl_history
-
-# firebase emulators
-# firebase-debug.log*
-# *.pid
-# *.pid.log
-# .firebase/emulators/*.*
-
-# genkit
-/.genkit-env.json
+# Drizzle Studio
+.drizzle
